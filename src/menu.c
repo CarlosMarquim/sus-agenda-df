@@ -6,6 +6,7 @@
 #include "paciente.h"
 #include "medico.h"
 #include "slot.h"
+#include "agendamento.h"
 
 /* Comando de limpeza de tela conforme o sistema operacional. */
 #ifdef _WIN32
@@ -275,6 +276,51 @@ static int submenu_agenda(void) {
     return 1;
 }
 
+static int submenu_agendamento(void) {
+    int opcao;
+    int resultado;
+
+    do {
+        limpar_tela();
+        exibir_cabecalho();
+        printf("--- AGENDAMENTOS ---\n");
+        printf("1. Criar novo agendamento\n");
+        printf("2. Cancelar agendamento\n");
+        printf("0. Voltar\n");
+        printf("Escolha uma opcao: ");
+
+        resultado = ler_opcao_menu(&opcao);
+        if (resultado == -1) {
+            return 0;
+        }
+        if (resultado == 0) {
+            printf("Erro: entrada invalida. Digite um numero.\n");
+            pausar_e_continuar();
+            opcao = -1;
+            continue;
+        }
+
+        switch (opcao) {
+            case 1:
+                agendamento_criar_terminal();
+                break;
+            case 2:
+                agendamento_cancelar_terminal();
+                break;
+            case 0:
+                break;
+            default:
+                printf("Erro: opcao invalida. Tente novamente.\n");
+        }
+
+        if (opcao != 0) {
+            pausar_e_continuar();
+        }
+    } while (opcao != 0);
+
+    return 1;
+}
+
 /* ===================== MENU PRINCIPAL (HUB) ===================== */
 
 void menu_principal(void) {
@@ -288,6 +334,7 @@ void menu_principal(void) {
         printf("1. Pacientes\n");
         printf("2. Medicos\n");
         printf("3. Agenda\n");
+        printf("4. Agendamentos\n");
         printf("0. Sair\n");
         printf("Escolha uma opcao: ");
 
@@ -313,6 +360,9 @@ void menu_principal(void) {
                 break;
             case 3:
                 continuar = submenu_agenda();
+                break;
+            case 4:
+                continuar = submenu_agendamento();
                 break;
             case 0:
                 printf("\nSaindo do sistema. Ate logo!\n");

@@ -70,6 +70,12 @@ int slot_ocupar(int grade_idx, int slot_idx, int paciente_idx);
  * indices forem invalidos ou se o slot ja estiver livre. */
 int slot_liberar(int grade_idx, int slot_idx);
 
+/* Vincula um agendamento a um slot, gravando agendamento_idx. Nao
+ * altera o campo 'ocupado' (isso e responsabilidade de slot_ocupar,
+ * que deve ser chamada separadamente). Retorna 1 em sucesso, 0 se os
+ * indices forem invalidos. */
+int slot_vincular_agendamento(int grade_idx, int slot_idx, int agendamento_idx);
+
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */
 
 /* Exibe no terminal a grade do dia indicada: medico, data, e cada

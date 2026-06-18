@@ -27,16 +27,19 @@
 #include "paciente.h"
 #include "medico.h"
 #include "slot.h"
+#include "agendamento.h"
 
 int main(void) {
     paciente_carregar();
     medico_carregar();
     grade_carregar();
+    agendamento_carregar();
 
     menu_principal();
 
     paciente_salvar();
     medico_salvar();
     grade_salvar();
+    agendamento_salvar();
     return 0;
 }

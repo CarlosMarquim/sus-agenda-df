@@ -28,6 +28,7 @@ typedef struct {
     char cpf[13];                     /* 12 caracteres + terminador nulo (11 digitos numericos) */
     char nome[100];                   /* nome completo do paciente */
     char data_nascimento[11];         /* formato DD/MM/AAAA */
+    char telefone[16];                /* ex.: (61)99999-9999 */
     int historico_ids[MAX_HISTORICO]; /* indices de agendamentos do paciente (preenchido na Fase 3) */
     int num_historico;                /* quantidade de agendamentos registrados no historico */
 
@@ -50,7 +51,8 @@ typedef enum {
     PACIENTE_ERRO_CPF_FORMATO_INVALIDO,
     PACIENTE_ERRO_CPF_DUPLICADO,
     PACIENTE_ERRO_NOME_VAZIO,
-    PACIENTE_ERRO_DATA_VAZIA
+    PACIENTE_ERRO_DATA_VAZIA,
+    PACIENTE_ERRO_TELEFONE_VAZIO
 } ResultadoPaciente;
 
 /* ===================== CAMADA CORE (sem I/O) ===================== */
@@ -61,7 +63,8 @@ typedef enum {
  * nao for NULL) e retorna PACIENTE_OK. Em caso de erro, retorna o
  * codigo correspondente e nao altera o estado global. */
 ResultadoPaciente paciente_registrar(const char *cpf, const char *nome,
-                                      const char *data_nascimento, int *idx_saida);
+                                      const char *data_nascimento, const char *telefone,
+                                      int *idx_saida);
 
 /* Busca um paciente pelo CPF (busca linear). Retorna o indice ou -1
  * se nao encontrado. */
@@ -75,6 +78,11 @@ const Paciente *paciente_obter(int idx);
  * Retorna 1 se valido, 0 caso contrario. Nao valida os digitos
  * verificadores, apenas o formato. */
 int validar_cpf_formato(const char *cpf);
+
+/* Adiciona o indice de um agendamento ao historico do paciente. Retorna
+ * 1 em sucesso, 0 se o indice de paciente for invalido ou o historico
+ * estiver cheio (MAX_HISTORICO). */
+int paciente_adicionar_historico(int idx_paciente, int idx_agendamento);
 
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */
 

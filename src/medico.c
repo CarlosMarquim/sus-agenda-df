@@ -10,6 +10,15 @@
 Medico medicos[MAX_MEDICOS];
 int num_medicos;
 
+/* Especialidades fixas do sistema (definicao do extern declarado em medico.h). */
+const char *ESPECIALIDADES[NUM_ESPECIALIDADES] = {
+    "Clinica Geral",
+    "Pediatria",
+    "Ginecologia",
+    "Ortopedia",
+    "Gastroenterologia"
+};
+
 /* Nomes dos dias da semana, na mesma ordem usada em
  * Medico.disponibilidade (0=domingo ... 6=sabado). */
 static const char *dias_semana[7] = {
@@ -55,6 +64,20 @@ static int esta_vazia_ou_so_espacos(const char *texto) {
 }
 
 /* ===================== CAMADA CORE (sem I/O) ===================== */
+
+int especialidade_valida(const char *especialidade) {
+    int i;
+
+    if (especialidade == NULL) {
+        return 0;
+    }
+    for (i = 0; i < NUM_ESPECIALIDADES; i++) {
+        if (strcmp(especialidade, ESPECIALIDADES[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int buscar_medico_crm(const char *crm) {
     int i;
@@ -116,6 +139,9 @@ int medico_registrar(const char *crm, const char *nome, const char *especialidad
     if (esta_vazia_ou_so_espacos(especialidade)) {
         return -1;
     }
+    if (!especialidade_valida(especialidade)) {
+        return -1;
+    }
 
     idx = num_medicos;
 
@@ -143,8 +169,10 @@ int medico_registrar(const char *crm, const char *nome, const char *especialidad
 void medico_cadastrar_terminal(void) {
     char crm[32];
     char nome[256];
-    char especialidade[64];
+    char buffer[16];
+    int opcao_esp;
     int idx;
+    int i;
 
     printf("\n=== CADASTRO DE MEDICO ===\n");
 
@@ -154,12 +182,14 @@ void medico_cadastrar_terminal(void) {
     printf("Nome completo: ");
     ler_linha(nome, sizeof(nome));
 
-    printf("Especialidade: ");
-    ler_linha(especialidade, sizeof(especialidade));
+    printf("Especialidade:\n");
+    for (i = 0; i < NUM_ESPECIALIDADES; i++) {
+        printf("%d. %s\n", i + 1, ESPECIALIDADES[i]);
+    }
+    printf("Escolha (1-%d): ", NUM_ESPECIALIDADES);
+    ler_linha(buffer, sizeof(buffer));
+    opcao_esp = atoi(buffer);
 
-    /* Validacoes especificas na camada terminal para dar uma mensagem
-     * de erro precisa ao atendente. medico_registrar tambem revalida
-     * tudo internamente (defesa em profundidade). */
     if (strlen(crm) == 0) {
         printf("Erro: CRM nao pode ser vazio.\n");
         return;
@@ -172,12 +202,13 @@ void medico_cadastrar_terminal(void) {
         printf("Erro: nome nao pode ser vazio.\n");
         return;
     }
-    if (esta_vazia_ou_so_espacos(especialidade)) {
-        printf("Erro: especialidade nao pode ser vazia.\n");
+    if (opcao_esp < 1 || opcao_esp > NUM_ESPECIALIDADES) {
+        printf("Erro: opcao de especialidade invalida. Escolha entre 1 e %d.\n",
+               NUM_ESPECIALIDADES);
         return;
     }
 
-    idx = medico_registrar(crm, nome, especialidade);
+    idx = medico_registrar(crm, nome, ESPECIALIDADES[opcao_esp - 1]);
     if (idx == -1) {
         printf("Erro: capacidade maxima de medicos atingida.\n");
         return;

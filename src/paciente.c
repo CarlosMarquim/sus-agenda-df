@@ -70,7 +70,8 @@ const Paciente *paciente_obter(int idx) {
 }
 
 ResultadoPaciente paciente_registrar(const char *cpf, const char *nome,
-                                      const char *data_nascimento, int *idx_saida) {
+                                      const char *data_nascimento, const char *telefone,
+                                      int *idx_saida) {
     int idx;
 
     if (num_pacientes >= MAX_PACIENTES) {
@@ -88,6 +89,9 @@ ResultadoPaciente paciente_registrar(const char *cpf, const char *nome,
     if (data_nascimento == NULL || strlen(data_nascimento) == 0) {
         return PACIENTE_ERRO_DATA_VAZIA;
     }
+    if (telefone == NULL || strlen(telefone) == 0) {
+        return PACIENTE_ERRO_TELEFONE_VAZIO;
+    }
 
     idx = num_pacientes;
 
@@ -100,6 +104,9 @@ ResultadoPaciente paciente_registrar(const char *cpf, const char *nome,
     strncpy(pacientes[idx].data_nascimento, data_nascimento, sizeof(pacientes[idx].data_nascimento) - 1);
     pacientes[idx].data_nascimento[sizeof(pacientes[idx].data_nascimento) - 1] = '\0';
 
+    strncpy(pacientes[idx].telefone, telefone, sizeof(pacientes[idx].telefone) - 1);
+    pacientes[idx].telefone[sizeof(pacientes[idx].telefone) - 1] = '\0';
+
     pacientes[idx].num_historico = 0;
     pacientes[idx].idx_agendamento_atual = -1; /* sem agendamento ainda (Fase 3) */
 
@@ -111,12 +118,25 @@ ResultadoPaciente paciente_registrar(const char *cpf, const char *nome,
     return PACIENTE_OK;
 }
 
+int paciente_adicionar_historico(int idx_paciente, int idx_agendamento) {
+    if (idx_paciente < 0 || idx_paciente >= num_pacientes) {
+        return 0;
+    }
+    if (pacientes[idx_paciente].num_historico >= MAX_HISTORICO) {
+        return 0;
+    }
+    pacientes[idx_paciente].historico_ids[pacientes[idx_paciente].num_historico] = idx_agendamento;
+    pacientes[idx_paciente].num_historico++;
+    return 1;
+}
+
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */
 
 int cadastrar_paciente(void) {
     char cpf[64];
     char nome[256];
     char data_nascimento[64];
+    char telefone[64];
     int idx;
     ResultadoPaciente resultado;
 
@@ -131,7 +151,10 @@ int cadastrar_paciente(void) {
     printf("Data de nascimento (DD/MM/AAAA): ");
     ler_linha(data_nascimento, sizeof(data_nascimento));
 
-    resultado = paciente_registrar(cpf, nome, data_nascimento, &idx);
+    printf("Telefone: ");
+    ler_linha(telefone, sizeof(telefone));
+
+    resultado = paciente_registrar(cpf, nome, data_nascimento, telefone, &idx);
 
     switch (resultado) {
         case PACIENTE_OK:
@@ -152,6 +175,9 @@ int cadastrar_paciente(void) {
         case PACIENTE_ERRO_DATA_VAZIA:
             printf("Erro: data de nascimento nao pode ser vazia.\n");
             return -1;
+        case PACIENTE_ERRO_TELEFONE_VAZIO:
+            printf("Erro: telefone nao pode ser vazio.\n");
+            return -1;
         default:
             printf("Erro: falha desconhecida ao cadastrar paciente.\n");
             return -1;
@@ -170,6 +196,7 @@ void exibir_paciente(int idx) {
     printf("CPF..............: %s\n", p->cpf);
     printf("Nome..............: %s\n", p->nome);
     printf("Data Nascimento...: %s\n", p->data_nascimento);
+    printf("Telefone..........: %s\n", p->telefone);
     printf("Historico.........: %d agendamento(s) registrado(s)\n", p->num_historico);
 }
 

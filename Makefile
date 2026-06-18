@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Iinclude
 TARGET = sus-agenda
-SRCS = src/main.c src/paciente.c src/medico.c src/slot.c src/menu.c
+SRCS = src/main.c src/paciente.c src/medico.c src/slot.c src/menu.c src/agendamento.c
 
 all: $(TARGET)
 

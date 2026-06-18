@@ -15,6 +15,13 @@
 
 #define MAX_MEDICOS 20
 
+#define NUM_ESPECIALIDADES 5
+extern const char *ESPECIALIDADES[NUM_ESPECIALIDADES];
+
+/* Retorna 1 se a string corresponde exatamente a uma das especialidades
+ * fixas do sistema, 0 caso contrario. */
+int especialidade_valida(const char *especialidade);
+
 /* Indices da dimensao de turno em Medico.disponibilidade[dia][turno]. */
 #define TURNO_MANHA 0
 #define TURNO_TARDE 1

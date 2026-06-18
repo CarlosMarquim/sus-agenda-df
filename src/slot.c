@@ -153,6 +153,17 @@ int slot_ocupar(int grade_idx, int slot_idx, int paciente_idx) {
     return 0;
 }
 
+int slot_vincular_agendamento(int grade_idx, int slot_idx, int agendamento_idx) {
+    if (grade_idx < 0 || grade_idx >= num_grades) {
+        return 0;
+    }
+    if (slot_idx < 0 || slot_idx >= grades[grade_idx].num_slots) {
+        return 0;
+    }
+    grades[grade_idx].slots[slot_idx].agendamento_idx = agendamento_idx;
+    return 1;
+}
+
 int slot_liberar(int grade_idx, int slot_idx) {
     if (grade_idx < 0 || grade_idx >= num_grades) {
         return -1;
