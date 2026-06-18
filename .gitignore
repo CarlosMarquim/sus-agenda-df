@@ -1,0 +1,19 @@
+# Binários compilados
+sus-agenda
+sus-agenda.exe
+
+# Objetos intermediários
+*.o
+
+# Arquivos de persistência local de teste
+*.dat
+
+# IDEs e editores
+.vscode/
+.idea/
+*.suo
+*.user
+*.ncb
+*.sdf
+Thumbs.db
+.DS_Store
