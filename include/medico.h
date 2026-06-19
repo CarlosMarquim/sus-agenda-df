@@ -43,15 +43,26 @@ typedef struct {
 extern Medico medicos[MAX_MEDICOS];
 extern int num_medicos;
 
+typedef enum {
+    MEDICO_OK = 0,
+    MEDICO_ERRO_CAPACIDADE_MAXIMA,
+    MEDICO_ERRO_CRM_VAZIO,
+    MEDICO_ERRO_CRM_DUPLICADO,
+    MEDICO_ERRO_NOME_VAZIO,
+    MEDICO_ERRO_ESPECIALIDADE_VAZIA,
+    MEDICO_ERRO_ESPECIALIDADE_INVALIDA
+} ResultadoMedico;
+
 /* ===================== CAMADA CORE (sem I/O) ===================== */
 
 /* Valida e registra um medico a partir de dados ja coletados. A
  * disponibilidade comeca toda zerada (indisponivel em todos os dias e
  * turnos); configure-a depois com
- * medico_configurar_disponibilidade_terminal. Retorna o indice do
- * medico cadastrado, ou -1 se: capacidade maxima atingida, CRM vazio
- * ou duplicado, nome vazio, ou especialidade vazia/so espacos. */
-int medico_registrar(const char *crm, const char *nome, const char *especialidade);
+ * medico_configurar_disponibilidade_terminal. Em sucesso, grava o
+ * indice em *idx_saida (se nao for NULL) e retorna MEDICO_OK. Em
+ * erro, retorna o codigo correspondente sem alterar o estado global. */
+ResultadoMedico medico_registrar(const char *crm, const char *nome,
+                                  const char *especialidade, int *idx_saida);
 
 /* Busca um medico pelo CRM (busca linear). Retorna o indice ou -1 se
  * nao encontrado. */
@@ -62,11 +73,9 @@ int buscar_medico_crm(const char *crm);
  * com os indices encontrados e retorna a quantidade encontrada. */
 int buscar_medicos_especialidade(const char *especialidade, int *resultados, int max);
 
-/* Copia os dados do medico no indice 'idx' para *dest. Nao faz nada se
- * 'dest' for NULL ou 'idx' estiver fora do intervalo valido -- o
- * chamador deve garantir um indice valido (ex.: obtido via
- * buscar_medico_crm) antes de chamar esta funcao. */
-void medico_obter(int idx, Medico *dest);
+/* Retorna um ponteiro somente-leitura para o medico no indice dado,
+ * ou NULL se o indice estiver fora do intervalo valido. */
+const Medico *medico_obter(int idx);
 
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */
 

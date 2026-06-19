@@ -52,6 +52,7 @@ typedef enum {
     PACIENTE_ERRO_CPF_DUPLICADO,
     PACIENTE_ERRO_NOME_VAZIO,
     PACIENTE_ERRO_DATA_VAZIA,
+    PACIENTE_ERRO_DATA_FORMATO_INVALIDO,
     PACIENTE_ERRO_TELEFONE_VAZIO
 } ResultadoPaciente;
 
@@ -79,8 +80,14 @@ const Paciente *paciente_obter(int idx);
  * verificadores, apenas o formato. */
 int validar_cpf_formato(const char *cpf);
 
+/* Valida se uma string tem o formato de data DD/MM/AAAA (exatamente
+ * 10 caracteres, barras nas posicoes 2 e 5, digitos nas demais, dia
+ * entre 01-31, mes entre 01-12). Retorna 1 se valido, 0 caso
+ * contrario. */
+int validar_data_formato(const char *data);
+
 /* Adiciona o indice de um agendamento ao historico do paciente. Retorna
- * 1 em sucesso, 0 se o indice de paciente for invalido ou o historico
+ * 0 em sucesso, -1 se o indice de paciente for invalido ou o historico
  * estiver cheio (MAX_HISTORICO). */
 int paciente_adicionar_historico(int idx_paciente, int idx_agendamento);
 

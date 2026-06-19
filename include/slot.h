@@ -19,7 +19,7 @@
  * turno "ambos" precisa, sem folga extra. */
 #define MAX_SLOTS_GRADE 18
 
-#define MAX_GRADES 50
+#define MAX_GRADES 200
 
 typedef struct {
     char hora[6];          /* "HH:MM" + terminador nulo */
@@ -61,6 +61,10 @@ int grade_criar(int medico_idx, const char *data);
  * ou -1 se nao encontrada. */
 int grade_buscar(int medico_idx, const char *data);
 
+/* Retorna um ponteiro somente-leitura para a grade no indice dado,
+ * ou NULL se o indice estiver fora do intervalo valido. */
+const GradeDia *grade_obter(int idx);
+
 /* Marca um slot como ocupado por um paciente. Retorna 0 em sucesso, -1
  * se os indices forem invalidos ou se o slot ja estiver ocupado
  * (nunca sobrescreve um slot ja ocupado). */
@@ -72,8 +76,8 @@ int slot_liberar(int grade_idx, int slot_idx);
 
 /* Vincula um agendamento a um slot, gravando agendamento_idx. Nao
  * altera o campo 'ocupado' (isso e responsabilidade de slot_ocupar,
- * que deve ser chamada separadamente). Retorna 1 em sucesso, 0 se os
- * indices forem invalidos. */
+ * que deve ser chamada separadamente). Retorna 0 em sucesso, -1 se
+ * os indices forem invalidos. */
 int slot_vincular_agendamento(int grade_idx, int slot_idx, int agendamento_idx);
 
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */

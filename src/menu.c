@@ -7,6 +7,7 @@
 #include "medico.h"
 #include "slot.h"
 #include "agendamento.h"
+#include "agenda.h"
 
 /* Comando de limpeza de tela conforme o sistema operacional. */
 #ifdef _WIN32
@@ -244,6 +245,8 @@ static int submenu_agenda(void) {
         exibir_cabecalho();
         printf("--- AGENDA ---\n");
         printf("1. Exibir grade do dia\n");
+        printf("2. Agenda do dia (todos os medicos)\n");
+        printf("3. Historico do paciente\n");
         printf("0. Voltar\n");
         printf("Escolha uma opcao: ");
 
@@ -261,6 +264,12 @@ static int submenu_agenda(void) {
         switch (opcao) {
             case 1:
                 opcao_exibir_grade_dia();
+                break;
+            case 2:
+                agenda_dia_terminal();
+                break;
+            case 3:
+                agenda_historico_paciente_terminal();
                 break;
             case 0:
                 break;

@@ -48,6 +48,39 @@ int validar_cpf_formato(const char *cpf) {
     return 1;
 }
 
+int validar_data_formato(const char *data) {
+    int i;
+    int dia, mes, ano;
+
+    if (data == NULL) {
+        return 0;
+    }
+    if (strlen(data) != 10) {
+        return 0;
+    }
+    for (i = 0; i < 10; i++) {
+        if (i == 2 || i == 5) {
+            if (data[i] != '/') {
+                return 0;
+            }
+        } else {
+            if (!isdigit((unsigned char)data[i])) {
+                return 0;
+            }
+        }
+    }
+    if (sscanf(data, "%d/%d/%d", &dia, &mes, &ano) != 3) {
+        return 0;
+    }
+    if (mes < 1 || mes > 12) {
+        return 0;
+    }
+    if (dia < 1 || dia > 31) {
+        return 0;
+    }
+    return 1;
+}
+
 int buscar_paciente_cpf(const char *cpf) {
     int i;
 
@@ -89,6 +122,9 @@ ResultadoPaciente paciente_registrar(const char *cpf, const char *nome,
     if (data_nascimento == NULL || strlen(data_nascimento) == 0) {
         return PACIENTE_ERRO_DATA_VAZIA;
     }
+    if (!validar_data_formato(data_nascimento)) {
+        return PACIENTE_ERRO_DATA_FORMATO_INVALIDO;
+    }
     if (telefone == NULL || strlen(telefone) == 0) {
         return PACIENTE_ERRO_TELEFONE_VAZIO;
     }
@@ -120,14 +156,14 @@ ResultadoPaciente paciente_registrar(const char *cpf, const char *nome,
 
 int paciente_adicionar_historico(int idx_paciente, int idx_agendamento) {
     if (idx_paciente < 0 || idx_paciente >= num_pacientes) {
-        return 0;
+        return -1;
     }
     if (pacientes[idx_paciente].num_historico >= MAX_HISTORICO) {
-        return 0;
+        return -1;
     }
     pacientes[idx_paciente].historico_ids[pacientes[idx_paciente].num_historico] = idx_agendamento;
     pacientes[idx_paciente].num_historico++;
-    return 1;
+    return 0;
 }
 
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */
@@ -174,6 +210,9 @@ int cadastrar_paciente(void) {
             return -1;
         case PACIENTE_ERRO_DATA_VAZIA:
             printf("Erro: data de nascimento nao pode ser vazia.\n");
+            return -1;
+        case PACIENTE_ERRO_DATA_FORMATO_INVALIDO:
+            printf("Erro: data de nascimento deve estar no formato DD/MM/AAAA.\n");
             return -1;
         case PACIENTE_ERRO_TELEFONE_VAZIO:
             printf("Erro: telefone nao pode ser vazio.\n");

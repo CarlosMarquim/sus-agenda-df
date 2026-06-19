@@ -109,38 +109,36 @@ int buscar_medicos_especialidade(const char *especialidade, int *resultados, int
     return total;
 }
 
-void medico_obter(int idx, Medico *dest) {
-    if (dest == NULL) {
-        return;
-    }
+const Medico *medico_obter(int idx) {
     if (idx < 0 || idx >= num_medicos) {
-        return;
+        return NULL;
     }
-    *dest = medicos[idx];
+    return &medicos[idx];
 }
 
-int medico_registrar(const char *crm, const char *nome, const char *especialidade) {
+ResultadoMedico medico_registrar(const char *crm, const char *nome,
+                                  const char *especialidade, int *idx_saida) {
     int idx;
     int dia;
     int turno;
 
     if (num_medicos >= MAX_MEDICOS) {
-        return -1;
+        return MEDICO_ERRO_CAPACIDADE_MAXIMA;
     }
     if (crm == NULL || strlen(crm) == 0) {
-        return -1;
+        return MEDICO_ERRO_CRM_VAZIO;
     }
     if (buscar_medico_crm(crm) != -1) {
-        return -1;
+        return MEDICO_ERRO_CRM_DUPLICADO;
     }
     if (nome == NULL || strlen(nome) == 0) {
-        return -1;
+        return MEDICO_ERRO_NOME_VAZIO;
     }
     if (esta_vazia_ou_so_espacos(especialidade)) {
-        return -1;
+        return MEDICO_ERRO_ESPECIALIDADE_VAZIA;
     }
     if (!especialidade_valida(especialidade)) {
-        return -1;
+        return MEDICO_ERRO_ESPECIALIDADE_INVALIDA;
     }
 
     idx = num_medicos;
@@ -161,7 +159,11 @@ int medico_registrar(const char *crm, const char *nome, const char *especialidad
     }
 
     num_medicos++;
-    return idx;
+
+    if (idx_saida != NULL) {
+        *idx_saida = idx;
+    }
+    return MEDICO_OK;
 }
 
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */
@@ -173,6 +175,7 @@ void medico_cadastrar_terminal(void) {
     int opcao_esp;
     int idx;
     int i;
+    ResultadoMedico resultado;
 
     printf("\n=== CADASTRO DE MEDICO ===\n");
 
@@ -190,31 +193,39 @@ void medico_cadastrar_terminal(void) {
     ler_linha(buffer, sizeof(buffer));
     opcao_esp = atoi(buffer);
 
-    if (strlen(crm) == 0) {
-        printf("Erro: CRM nao pode ser vazio.\n");
-        return;
-    }
-    if (buscar_medico_crm(crm) != -1) {
-        printf("Erro: CRM ja cadastrado.\n");
-        return;
-    }
-    if (strlen(nome) == 0) {
-        printf("Erro: nome nao pode ser vazio.\n");
-        return;
-    }
     if (opcao_esp < 1 || opcao_esp > NUM_ESPECIALIDADES) {
         printf("Erro: opcao de especialidade invalida. Escolha entre 1 e %d.\n",
                NUM_ESPECIALIDADES);
         return;
     }
 
-    idx = medico_registrar(crm, nome, ESPECIALIDADES[opcao_esp - 1]);
-    if (idx == -1) {
-        printf("Erro: capacidade maxima de medicos atingida.\n");
-        return;
-    }
+    resultado = medico_registrar(crm, nome, ESPECIALIDADES[opcao_esp - 1], &idx);
 
-    printf("Medico cadastrado com sucesso. Protocolo interno: #%03d\n", idx + 1);
+    switch (resultado) {
+        case MEDICO_OK:
+            printf("Medico cadastrado com sucesso. Protocolo interno: #%03d\n", idx + 1);
+            break;
+        case MEDICO_ERRO_CAPACIDADE_MAXIMA:
+            printf("Erro: capacidade maxima de medicos atingida.\n");
+            break;
+        case MEDICO_ERRO_CRM_VAZIO:
+            printf("Erro: CRM nao pode ser vazio.\n");
+            break;
+        case MEDICO_ERRO_CRM_DUPLICADO:
+            printf("Erro: CRM ja cadastrado.\n");
+            break;
+        case MEDICO_ERRO_NOME_VAZIO:
+            printf("Erro: nome nao pode ser vazio.\n");
+            break;
+        case MEDICO_ERRO_ESPECIALIDADE_VAZIA:
+            printf("Erro: especialidade nao pode ser vazia.\n");
+            break;
+        case MEDICO_ERRO_ESPECIALIDADE_INVALIDA:
+            printf("Erro: especialidade invalida.\n");
+            break;
+        default:
+            printf("Erro: falha desconhecida ao cadastrar medico.\n");
+    }
 }
 
 void medico_listar_terminal(void) {
@@ -302,7 +313,7 @@ void medico_buscar_terminal(void) {
 static void exibir_tabela_disponibilidade(const Medico *m) {
     int dia;
 
-    printf("\n=== DISPONIBILIDADE - Dr. %s ===\n\n", m->nome);
+    printf("\n=== DISPONIBILIDADE - %s ===\n\n", m->nome);
     printf("Dia           Manha    Tarde\n");
     for (dia = 0; dia < 7; dia++) {
         printf("%-13s %-8s %-8s\n",

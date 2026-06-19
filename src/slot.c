@@ -98,7 +98,7 @@ int grade_buscar(int medico_idx, const char *data) {
 int grade_criar(int medico_idx, const char *data) {
     int idx;
     int dia_semana;
-    Medico m;
+    const Medico *m;
 
     if (medico_idx < 0 || medico_idx >= num_medicos) {
         return -1;
@@ -107,7 +107,7 @@ int grade_criar(int medico_idx, const char *data) {
         return -1;
     }
     if (grade_buscar(medico_idx, data) != -1) {
-        return -1; /* ja existe grade para esse medico nessa data */
+        return -1;
     }
     if (num_grades >= MAX_GRADES) {
         return -1;
@@ -115,10 +115,13 @@ int grade_criar(int medico_idx, const char *data) {
 
     dia_semana = dia_semana_de_data(data);
     if (dia_semana < 0 || dia_semana > 6) {
-        return -1; /* data em formato invalido */
+        return -1;
     }
 
-    medico_obter(medico_idx, &m);
+    m = medico_obter(medico_idx);
+    if (m == NULL) {
+        return -1;
+    }
 
     idx = num_grades;
     grades[idx].medico_idx = medico_idx;
@@ -126,15 +129,22 @@ int grade_criar(int medico_idx, const char *data) {
     grades[idx].data[sizeof(grades[idx].data) - 1] = '\0';
     grades[idx].num_slots = 0;
 
-    if (m.disponibilidade[dia_semana][TURNO_MANHA]) {
-        gerar_slots_periodo(&grades[idx], 7, 0, 9); /* 07:00 as 11:30 */
+    if (m->disponibilidade[dia_semana][TURNO_MANHA]) {
+        gerar_slots_periodo(&grades[idx], 7, 0, 9);
     }
-    if (m.disponibilidade[dia_semana][TURNO_TARDE]) {
-        gerar_slots_periodo(&grades[idx], 13, 0, 9); /* 13:00 as 17:30 */
+    if (m->disponibilidade[dia_semana][TURNO_TARDE]) {
+        gerar_slots_periodo(&grades[idx], 13, 0, 9);
     }
 
     num_grades++;
     return idx;
+}
+
+const GradeDia *grade_obter(int idx) {
+    if (idx < 0 || idx >= num_grades) {
+        return NULL;
+    }
+    return &grades[idx];
 }
 
 int slot_ocupar(int grade_idx, int slot_idx, int paciente_idx) {
@@ -155,13 +165,13 @@ int slot_ocupar(int grade_idx, int slot_idx, int paciente_idx) {
 
 int slot_vincular_agendamento(int grade_idx, int slot_idx, int agendamento_idx) {
     if (grade_idx < 0 || grade_idx >= num_grades) {
-        return 0;
+        return -1;
     }
     if (slot_idx < 0 || slot_idx >= grades[grade_idx].num_slots) {
-        return 0;
+        return -1;
     }
     grades[grade_idx].slots[slot_idx].agendamento_idx = agendamento_idx;
-    return 1;
+    return 0;
 }
 
 int slot_liberar(int grade_idx, int slot_idx) {
@@ -186,8 +196,8 @@ int slot_liberar(int grade_idx, int slot_idx) {
 void grade_exibir_terminal(int grade_idx) {
     int i;
     const GradeDia *g;
-    Medico m;
-    int turno_atual = -1; /* -1 = nenhum ainda; 0 = manha; 1 = tarde */
+    const Medico *m;
+    int turno_atual = -1;
 
     if (grade_idx < 0 || grade_idx >= num_grades) {
         printf("Erro: grade nao encontrada.\n");
@@ -195,9 +205,13 @@ void grade_exibir_terminal(int grade_idx) {
     }
     g = &grades[grade_idx];
 
-    medico_obter(g->medico_idx, &m);
+    m = medico_obter(g->medico_idx);
+    if (m == NULL) {
+        printf("Erro: medico nao encontrado.\n");
+        return;
+    }
 
-    printf("\n=== GRADE DE SLOTS - Dr. %s - %s ===\n", m.nome, g->data);
+    printf("\n=== GRADE DE SLOTS - %s - %s ===\n", m->nome, g->data);
 
     if (g->num_slots == 0) {
         printf("\nNenhum slot disponivel nesta grade.\n");
