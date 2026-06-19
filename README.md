@@ -23,14 +23,14 @@ sus-agenda-df/
 │   ├── medico.c
 │   ├── slot.c                    # grade de slots por dia (Fase 2)
 │   ├── menu.c
-│   ├── agendamento.c             # [futuro — Fase 3]
-│   └── agenda.c                  # [futuro — Fase 4]
+│   ├── agendamento.c
+│   └── agenda.c
 ├── include/                      # headers de interface
 │   ├── paciente.h
 │   ├── medico.h
 │   ├── slot.h
 │   ├── agendamento.h
-│   ├── agenda.h                  # [futuro — Fase 4]
+│   ├── agenda.h
 │   └── menu.h
 ├── docs/                         # documentação do projeto
 │   ├── elicitacao.md             # 5W2H, público-alvo, stakeholders, custo computacional
@@ -69,8 +69,8 @@ Requer apenas `gcc` e a biblioteca padrão de C. Sem dependências externas.
 |---|---|---|
 | 1 — Base e cadastro de pacientes | Structs definidas, menu de navegação, cadastro e busca por CPF | Concluída |
 | 2 — Médicos e grade de slots | Cadastro de médicos, disponibilidade por turno, grade de slots | Concluída |
-| 3 — Agendamento completo | Registro de queixa, validação de conflito, protocolo, cancelamento | Em andamento |
-| 4 — Agenda e documentação | Visões de agenda, ajustes finais, documentação | Pendente |
+| 3 — Agendamento completo | Registro de queixa, validação de conflito, protocolo, cancelamento | Concluída |
+| 4 — Agenda e documentação | Visões de agenda, ajustes finais, documentação | Concluída |
 
 Prazo de entrega: 25 de junho de 2026.
 

@@ -102,14 +102,14 @@ sus-agenda-df/
 │   ├── medico.c
 │   ├── slot.c              # grade de slots por dia (Fase 2)
 │   ├── menu.c
-│   ├── agendamento.c       # [futuro — Fase 3]
-│   └── agenda.c            # [futuro — Fase 4]
+│   ├── agendamento.c
+│   └── agenda.c
 ├── include/
 │   ├── paciente.h
 │   ├── medico.h
 │   ├── slot.h
 │   ├── agendamento.h
-│   ├── agenda.h            # [futuro — Fase 4]
+│   ├── agenda.h
 │   └── menu.h
 ├── docs/
 │   ├── elicitacao.md

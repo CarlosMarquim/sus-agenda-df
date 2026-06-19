@@ -62,8 +62,8 @@ Prazo total: até 25 de junho de 2026, dividido em 4 fases.
 |---|---|---|---|
 | 1 | Até 14/06 | Structs definidas, menu de navegação, cadastro e busca de paciente por CPF | Concluída |
 | 2 | Até 18/06 | Cadastro de médicos, disponibilidade por turno, exibição de slots livres e ocupados | Concluída |
-| 3 | Até 22/06 | Agendamento completo com registro de queixa, validação de conflito, protocolo, cancelamento | Em andamento |
-| 4 | Até 25/06 | Visões de agenda, ajustes finais, documentação, commits organizados | Pendente |
+| 3 | Até 22/06 | Agendamento completo com registro de queixa, validação de conflito, protocolo, cancelamento | Concluída |
+| 4 | Até 25/06 | Visões de agenda, ajustes finais, documentação, commits organizados | Concluída |
 | Contingência | Após 25/06 ou em paralelo se houver tempo | Interface gráfica web substituindo o terminal | Planejada, não bloqueia entrega |
 
 ## 7. Regras de Negócio (resumo de produto)
