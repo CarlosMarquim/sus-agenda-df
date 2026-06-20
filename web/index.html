@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUS-Agenda DF</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loading-screen" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;">
+  <div style="font-size:20px;font-weight:600;color:var(--color-primary);">SUS-Agenda DF</div>
+  <div style="font-size:14px;color:var(--color-text-secondary);">Carregando sistema...</div>
+</div>
+
+<div class="app" id="app" style="display:none;">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      SUS-Agenda DF
+      <small>Sistema de Agendamento</small>
+    </div>
+
+    <div class="sidebar-section">Geral</div>
+    <button class="nav-btn active" data-screen="dashboard">Dashboard</button>
+
+    <div class="sidebar-section">Pacientes</div>
+    <button class="nav-btn" data-screen="pac-cadastrar">Cadastrar</button>
+    <button class="nav-btn" data-screen="pac-listar">Listar</button>
+    <button class="nav-btn" data-screen="historico">Historico</button>
+
+    <div class="sidebar-section">Medicos</div>
+    <button class="nav-btn" data-screen="med-cadastrar">Cadastrar</button>
+    <button class="nav-btn" data-screen="med-listar">Listar</button>
+    <button class="nav-btn" data-screen="med-disp">Disponibilidade</button>
+
+    <div class="sidebar-section">Agendamentos</div>
+    <button class="nav-btn" data-screen="agendar">Agendar</button>
+    <button class="nav-btn" data-screen="cancelar">Cancelar</button>
+
+    <div class="sidebar-section">Consultas</div>
+    <button class="nav-btn" data-screen="grade-medico">Grade Medico</button>
+    <button class="nav-btn" data-screen="agenda-dia">Agenda do Dia</button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Dashboard -->
+    <div class="screen active" id="screen-dashboard">
+      <h1>Dashboard</h1>
+      <div class="cards-grid" id="dash-cards"></div>
+      <h2>Consultas de Hoje</h2>
+      <div id="dash-hoje"></div>
+    </div>
+
+    <!-- Pacientes: Cadastrar -->
+    <div class="screen" id="screen-pac-cadastrar">
+      <h1>Cadastrar Paciente</h1>
+      <div style="max-width:480px;">
+        <div class="form-group">
+          <label>CPF</label>
+          <input type="text" id="pac-cpf" placeholder="00000000000" maxlength="11">
+        </div>
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="pac-nome" placeholder="Nome completo">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data de Nascimento</label>
+            <input type="text" id="pac-nasc" placeholder="DD/MM/AAAA">
+          </div>
+          <div class="form-group">
+            <label>Telefone</label>
+            <input type="text" id="pac-tel" placeholder="(00) 00000-0000">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="pac-cadastrar-btn">Cadastrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pacientes: Listar -->
+    <div class="screen" id="screen-pac-listar">
+      <h1>Pacientes Cadastrados</h1>
+      <div id="pac-lista"></div>
+    </div>
+
+    <!-- Historico Paciente -->
+    <div class="screen" id="screen-historico">
+      <h1>Historico do Paciente</h1>
+      <div style="max-width:480px;">
+        <div class="form-group">
+          <label>CPF do Paciente</label>
+          <input type="text" id="hist-cpf" placeholder="00000000000" maxlength="11">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="hist-buscar-btn">Buscar</button>
+        </div>
+      </div>
+      <div id="hist-resultado" style="margin-top:24px;"></div>
+    </div>
+
+    <!-- Medicos: Cadastrar -->
+    <div class="screen" id="screen-med-cadastrar">
+      <h1>Cadastrar Medico</h1>
+      <div style="max-width:480px;">
+        <div class="form-group">
+          <label>CRM</label>
+          <input type="text" id="med-crm" placeholder="CRM do medico">
+        </div>
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="med-nome" placeholder="Nome completo">
+        </div>
+        <div class="form-group">
+          <label>Especialidade</label>
+          <select id="med-esp"></select>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="med-cadastrar-btn">Cadastrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medicos: Listar -->
+    <div class="screen" id="screen-med-listar">
+      <h1>Medicos Cadastrados</h1>
+      <div id="med-lista"></div>
+    </div>
+
+    <!-- Medicos: Disponibilidade -->
+    <div class="screen" id="screen-med-disp">
+      <h1>Disponibilidade do Medico</h1>
+      <div style="max-width:480px;">
+        <div class="form-group">
+          <label>CRM do Medico</label>
+          <input type="text" id="disp-crm" placeholder="CRM">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="disp-buscar-btn">Buscar</button>
+        </div>
+      </div>
+      <div id="disp-resultado" style="margin-top:24px;"></div>
+    </div>
+
+    <!-- Agendar (multi-step) -->
+    <div class="screen" id="screen-agendar">
+      <h1>Novo Agendamento</h1>
+      <div class="step-indicator" id="ag-steps"></div>
+      <div id="ag-content"></div>
+    </div>
+
+    <!-- Cancelar -->
+    <div class="screen" id="screen-cancelar">
+      <h1>Cancelar Agendamento</h1>
+      <div style="max-width:480px;">
+        <div class="form-group">
+          <label>Numero do Protocolo</label>
+          <input type="text" id="cancel-proto" placeholder="Ex: 1001">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="cancel-buscar-btn">Buscar</button>
+        </div>
+      </div>
+      <div id="cancel-resultado" style="margin-top:24px;"></div>
+    </div>
+
+    <!-- Grade Medico -->
+    <div class="screen" id="screen-grade-medico">
+      <h1>Grade do Medico</h1>
+      <div style="max-width:480px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>CRM</label>
+            <input type="text" id="grade-crm" placeholder="CRM">
+          </div>
+          <div class="form-group">
+            <label>Data</label>
+            <input type="text" id="grade-data" placeholder="DD/MM/AAAA">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="grade-buscar-btn">Buscar</button>
+        </div>
+      </div>
+      <div id="grade-resultado" style="margin-top:24px;"></div>
+    </div>
+
+    <!-- Agenda do Dia -->
+    <div class="screen" id="screen-agenda-dia">
+      <h1>Agenda do Dia</h1>
+      <div style="max-width:480px;">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="text" id="agdia-data" placeholder="DD/MM/AAAA">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="agdia-buscar-btn">Buscar</button>
+        </div>
+      </div>
+      <div id="agdia-resultado" style="margin-top:24px;"></div>
+    </div>
+
+  </main>
+</div>
+
+<script src="sus-agenda.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

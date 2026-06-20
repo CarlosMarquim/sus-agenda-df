@@ -116,6 +116,18 @@ const Medico *medico_obter(int idx) {
     return &medicos[idx];
 }
 
+int medico_alternar_disponibilidade(int idx_medico, int dia, int turno) {
+    if (idx_medico < 0 || idx_medico >= num_medicos) {
+        return -1;
+    }
+    if (dia < 0 || dia > 6 || (turno != TURNO_MANHA && turno != TURNO_TARDE)) {
+        return -1;
+    }
+    medicos[idx_medico].disponibilidade[dia][turno] =
+        !medicos[idx_medico].disponibilidade[dia][turno];
+    return 0;
+}
+
 ResultadoMedico medico_registrar(const char *crm, const char *nome,
                                   const char *especialidade, int *idx_saida) {
     int idx;
@@ -362,7 +374,7 @@ void medico_configurar_disponibilidade_terminal(void) {
             continue;
         }
 
-        medicos[idx].disponibilidade[dia][turno] = !medicos[idx].disponibilidade[dia][turno];
+        medico_alternar_disponibilidade(idx, dia, turno);
     }
 
     printf("\n=== DISPONIBILIDADE FINAL ===\n");

@@ -77,6 +77,11 @@ int buscar_medicos_especialidade(const char *especialidade, int *resultados, int
  * ou NULL se o indice estiver fora do intervalo valido. */
 const Medico *medico_obter(int idx);
 
+/* Alterna o status de disponibilidade (S/N) de um dia/turno especifico
+ * do medico no indice dado. Retorna 0 em sucesso, -1 se os indices
+ * forem invalidos. */
+int medico_alternar_disponibilidade(int idx_medico, int dia, int turno);
+
 /* ==================== CAMADA TERMINAL (com I/O) ==================== */
 
 /* Cadastra um novo medico interagindo via terminal (le os dados do
