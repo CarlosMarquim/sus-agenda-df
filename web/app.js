@@ -18,6 +18,69 @@
     return dd + '/' + mm + '/' + yyyy;
   }
 
+  // ── SVG Icons (reusable) ────────────────────────────────────────────
+
+  var ICONS = {
+    calendar: '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    user: '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    clipboard: '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>',
+    check: '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>',
+    alertTriangle: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+  };
+
+  // ── Empty State ─────────────────────────────────────────────────────
+
+  function emptyStateHtml(icon, message, actionLabel, actionScreen) {
+    var html = '<div class="empty-state">';
+    html += '<div class="empty-state-icon">' + (ICONS[icon] || ICONS.calendar) + '</div>';
+    html += '<div class="empty-state-text">' + message + '</div>';
+    if (actionLabel && actionScreen) {
+      html += '<button class="btn btn-secondary empty-state-action" data-nav="' + actionScreen + '">' + actionLabel + '</button>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function bindEmptyStateActions(container) {
+    var btns = (container || document).querySelectorAll('.empty-state-action[data-nav]');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function () {
+        navigate(this.getAttribute('data-nav'));
+      });
+    }
+  }
+
+  // ── Form Validation Helpers ─────────────────────────────────────────
+
+  function showFieldError(fieldId, msg) {
+    clearFieldError(fieldId);
+    var field = document.getElementById(fieldId);
+    if (!field) return;
+    var group = field.closest('.form-group');
+    if (group) group.classList.add('has-error');
+    var errEl = document.createElement('div');
+    errEl.className = 'form-error-msg';
+    errEl.innerHTML = ICONS.alertTriangle + ' ' + msg;
+    field.parentNode.appendChild(errEl);
+  }
+
+  function clearFieldError(fieldId) {
+    var field = document.getElementById(fieldId);
+    if (!field) return;
+    var group = field.closest('.form-group');
+    if (!group) return;
+    group.classList.remove('has-error');
+    var existing = group.querySelector('.form-error-msg');
+    if (existing) existing.remove();
+  }
+
+  function clearAllFieldErrors() {
+    var errors = document.querySelectorAll('.form-error-msg');
+    for (var i = 0; i < errors.length; i++) errors[i].remove();
+    var groups = document.querySelectorAll('.form-group.has-error');
+    for (var j = 0; j < groups.length; j++) groups[j].classList.remove('has-error');
+  }
+
   // ── Toast ────────────────────────────────────────────────────────────
 
   function toast(msg, type) {
@@ -25,7 +88,7 @@
     el.className = 'toast ' + (type === 'error' ? 'toast-error' : 'toast-success');
     el.textContent = msg;
     document.body.appendChild(el);
-    setTimeout(function () { el.remove(); }, 3000);
+    setTimeout(function () { el.remove(); }, 3500);
   }
 
   // ── Navigation ───────────────────────────────────────────────────────
@@ -45,6 +108,14 @@
         btns[j].classList.add('active');
       }
     }
+
+    // Close sidebar on mobile
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+
+    clearAllFieldErrors();
 
     // Load screen data
     var loaders = {
@@ -70,7 +141,8 @@
     var agenda = call('bridge_agenda_dia', [todayStr()], ['string']);
     var hojeEl = document.getElementById('dash-hoje');
     if (!agenda || agenda.length === 0) {
-      hojeEl.innerHTML = '<p style="color:var(--color-text-secondary);font-size:14px;">Nenhuma consulta agendada para hoje.</p>';
+      hojeEl.innerHTML = emptyStateHtml('calendar', 'Nenhuma consulta agendada para hoje.', 'Criar agendamento', 'agendar');
+      bindEmptyStateActions(hojeEl);
       return;
     }
     var rows = '';
@@ -85,7 +157,8 @@
       }
     }
     if (!rows) {
-      hojeEl.innerHTML = '<p style="color:var(--color-text-secondary);font-size:14px;">Nenhuma consulta agendada para hoje.</p>';
+      hojeEl.innerHTML = emptyStateHtml('calendar', 'Nenhuma consulta agendada para hoje.', 'Criar agendamento', 'agendar');
+      bindEmptyStateActions(hojeEl);
       return;
     }
     hojeEl.innerHTML =
@@ -97,14 +170,17 @@
 
   function setupPacCadastrar() {
     document.getElementById('pac-cadastrar-btn').addEventListener('click', function () {
+      clearAllFieldErrors();
       var cpf = document.getElementById('pac-cpf').value.trim();
       var nome = document.getElementById('pac-nome').value.trim();
       var nasc = document.getElementById('pac-nasc').value.trim();
       var tel = document.getElementById('pac-tel').value.trim();
-      if (!cpf || !nome || !nasc || !tel) {
-        toast('Preencha todos os campos.', 'error');
-        return;
-      }
+      var hasError = false;
+      if (!cpf) { showFieldError('pac-cpf', 'CPF e obrigatorio'); hasError = true; }
+      if (!nome) { showFieldError('pac-nome', 'Nome e obrigatorio'); hasError = true; }
+      if (!nasc) { showFieldError('pac-nasc', 'Data de nascimento e obrigatoria'); hasError = true; }
+      if (!tel) { showFieldError('pac-tel', 'Telefone e obrigatorio'); hasError = true; }
+      if (hasError) return;
       var r = call('bridge_paciente_cadastrar', [cpf, nome, nasc, tel], ['string', 'string', 'string', 'string']);
       if (r.ok) {
         toast('Paciente cadastrado com sucesso!');
@@ -112,6 +188,7 @@
         document.getElementById('pac-nome').value = '';
         document.getElementById('pac-nasc').value = '';
         document.getElementById('pac-tel').value = '';
+        clearAllFieldErrors();
       } else {
         toast(r.erro || 'Erro ao cadastrar.', 'error');
       }
@@ -124,7 +201,8 @@
     var lista = call('bridge_paciente_listar', [], []);
     var el = document.getElementById('pac-lista');
     if (!lista || lista.length === 0) {
-      el.innerHTML = '<p style="color:var(--color-text-secondary);font-size:14px;">Nenhum paciente cadastrado.</p>';
+      el.innerHTML = emptyStateHtml('user', 'Nenhum paciente cadastrado ainda.', 'Cadastrar paciente', 'pac-cadastrar');
+      bindEmptyStateActions(el);
       return;
     }
     var rows = '';
@@ -141,8 +219,9 @@
 
   function setupHistorico() {
     document.getElementById('hist-buscar-btn').addEventListener('click', function () {
+      clearAllFieldErrors();
       var cpf = document.getElementById('hist-cpf').value.trim();
-      if (!cpf) { toast('Informe o CPF.', 'error'); return; }
+      if (!cpf) { showFieldError('hist-cpf', 'Informe o CPF'); return; }
       var pac = call('bridge_paciente_buscar_cpf', [cpf], ['string']);
       if (!pac.encontrado) {
         toast('Paciente nao encontrado.', 'error');
@@ -153,7 +232,7 @@
       var el = document.getElementById('hist-resultado');
       var html = '<div class="summary-box"><strong>Paciente:</strong> ' + pac.nome + '<br><strong>CPF:</strong> ' + pac.cpf + '</div>';
       if (!r.ok || r.total === 0) {
-        html += '<p style="color:var(--color-text-secondary);font-size:14px;">Nenhum agendamento encontrado.</p>';
+        html += emptyStateHtml('calendar', 'Nenhum agendamento encontrado para este paciente.');
         el.innerHTML = html;
         return;
       }
@@ -184,18 +263,20 @@
 
   function setupMedCadastrar() {
     document.getElementById('med-cadastrar-btn').addEventListener('click', function () {
+      clearAllFieldErrors();
       var crm = document.getElementById('med-crm').value.trim();
       var nome = document.getElementById('med-nome').value.trim();
       var espIdx = parseInt(document.getElementById('med-esp').value, 10);
-      if (!crm || !nome) {
-        toast('Preencha CRM e Nome.', 'error');
-        return;
-      }
+      var hasError = false;
+      if (!crm) { showFieldError('med-crm', 'CRM e obrigatorio'); hasError = true; }
+      if (!nome) { showFieldError('med-nome', 'Nome e obrigatorio'); hasError = true; }
+      if (hasError) return;
       var r = call('bridge_medico_cadastrar', [crm, nome, espIdx], ['string', 'string', 'number']);
       if (r.ok) {
         toast('Medico cadastrado com sucesso!');
         document.getElementById('med-crm').value = '';
         document.getElementById('med-nome').value = '';
+        clearAllFieldErrors();
       } else {
         toast(r.erro || 'Erro ao cadastrar.', 'error');
       }
@@ -208,7 +289,8 @@
     var lista = call('bridge_medico_listar', [], []);
     var el = document.getElementById('med-lista');
     if (!lista || lista.length === 0) {
-      el.innerHTML = '<p style="color:var(--color-text-secondary);font-size:14px;">Nenhum medico cadastrado.</p>';
+      el.innerHTML = emptyStateHtml('clipboard', 'Nenhum medico cadastrado ainda.', 'Cadastrar medico', 'med-cadastrar');
+      bindEmptyStateActions(el);
       return;
     }
     var rows = '';
@@ -242,8 +324,9 @@
 
   function setupDisp() {
     document.getElementById('disp-buscar-btn').addEventListener('click', function () {
+      clearAllFieldErrors();
       var crm = document.getElementById('disp-crm').value.trim();
-      if (!crm) { toast('Informe o CRM.', 'error'); return; }
+      if (!crm) { showFieldError('disp-crm', 'Informe o CRM'); return; }
       var med = call('bridge_medico_buscar_crm', [crm], ['string']);
       if (!med.encontrado) {
         toast('Medico nao encontrado.', 'error');
@@ -295,16 +378,24 @@
     queixa: ''
   };
 
-  var AG_STEPS = 6; // 0=CPF, 1=especialidade, 2=medico, 3=data+grade+slot, 4=queixa, 5=confirmar
+  var AG_STEPS = 6;
+  var AG_LABELS = ['Paciente', 'Especialidade', 'Medico', 'Horario', 'Queixa', 'Confirmacao'];
 
   function renderSteps() {
     var el = document.getElementById('ag-steps');
     var html = '';
     for (var i = 0; i < AG_STEPS; i++) {
-      var cls = 'step-dot';
+      var cls = 'step-item';
       if (i < agState.step) cls += ' done';
       else if (i === agState.step) cls += ' active';
-      html += '<div class="' + cls + '"></div>';
+      var content = (i < agState.step) ? '✓' : String(i + 1);
+      html += '<div class="' + cls + '">';
+      html += '<div class="step-number">' + content + '</div>';
+      html += '<div class="step-label">' + AG_LABELS[i] + '</div>';
+      html += '</div>';
+      if (i < AG_STEPS - 1) {
+        html += '<div class="step-line' + (i < agState.step ? ' done' : '') + '"></div>';
+      }
     }
     el.innerHTML = html;
   }
@@ -329,7 +420,6 @@
     var el = document.getElementById('ag-content');
 
     if (agState.step === 0) {
-      // Step 0: CPF
       el.innerHTML =
         '<h3>Identificar Paciente</h3>' +
         '<div style="max-width:400px;">' +
@@ -337,8 +427,9 @@
         '<div class="btn-row"><button class="btn btn-primary" id="ag-cpf-btn">Buscar</button></div>' +
         '</div>';
       document.getElementById('ag-cpf-btn').addEventListener('click', function () {
+        clearAllFieldErrors();
         var cpf = document.getElementById('ag-cpf').value.trim();
-        if (!cpf) { toast('Informe o CPF.', 'error'); return; }
+        if (!cpf) { showFieldError('ag-cpf', 'Informe o CPF'); return; }
         var r = call('bridge_paciente_buscar_cpf', [cpf], ['string']);
         if (!r.encontrado) { toast('Paciente nao encontrado.', 'error'); return; }
         agState.cpf = r.cpf;
@@ -348,7 +439,6 @@
       });
 
     } else if (agState.step === 1) {
-      // Step 1: Especialidade
       var esp = call('bridge_especialidades_listar', [], []);
       var html = '<h3>Selecionar Especialidade</h3>' +
         '<div class="summary-box"><strong>Paciente:</strong> ' + agState.pacNome + ' (' + agState.cpf + ')</div>' +
@@ -374,7 +464,6 @@
       });
 
     } else if (agState.step === 2) {
-      // Step 2: Medico
       var medicos = call('bridge_medico_buscar_especialidade', [agState.espIdx], ['number']);
       var html2 = '<h3>Selecionar Medico</h3>' +
         '<div class="summary-box"><strong>Paciente:</strong> ' + agState.pacNome + '<br><strong>Especialidade:</strong> ' + agState.espNome + '</div>';
@@ -416,7 +505,6 @@
       });
 
     } else if (agState.step === 3) {
-      // Step 3: Data + Grade + Slot
       el.innerHTML =
         '<h3>Selecionar Data e Horario</h3>' +
         '<div class="summary-box"><strong>Paciente:</strong> ' + agState.pacNome + '<br><strong>Medico:</strong> ' + agState.medNome + ' (' + agState.espNome + ')</div>' +
@@ -428,8 +516,9 @@
         '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-3">Voltar</button></div>';
 
       document.getElementById('ag-grade-btn').addEventListener('click', function () {
+        clearAllFieldErrors();
         var data = document.getElementById('ag-data').value.trim();
-        if (!data) { toast('Informe a data.', 'error'); return; }
+        if (!data) { showFieldError('ag-data', 'Informe a data'); return; }
         agState.data = data;
         var r = call('bridge_grade_obter_ou_criar', [agState.crm, data], ['string', 'string']);
         if (!r.ok) {
@@ -445,7 +534,6 @@
       });
 
     } else if (agState.step === 4) {
-      // Step 4: Queixa
       el.innerHTML =
         '<h3>Informar Queixa</h3>' +
         '<div class="summary-box"><strong>Paciente:</strong> ' + agState.pacNome + '<br><strong>Medico:</strong> ' + agState.medNome + '<br><strong>Data:</strong> ' + agState.data + '<br><strong>Horario:</strong> ' + agState.slotHora + '</div>' +
@@ -455,8 +543,9 @@
         '</div>';
 
       document.getElementById('ag-queixa-btn').addEventListener('click', function () {
+        clearAllFieldErrors();
         agState.queixa = document.getElementById('ag-queixa').value.trim();
-        if (!agState.queixa) { toast('Informe a queixa.', 'error'); return; }
+        if (!agState.queixa) { showFieldError('ag-queixa', 'Informe a queixa do paciente'); return; }
         agState.step = 5;
         renderAgStep();
       });
@@ -466,7 +555,6 @@
       });
 
     } else if (agState.step === 5) {
-      // Step 5: Confirmar
       el.innerHTML =
         '<h3>Confirmar Agendamento</h3>' +
         '<div class="summary-box">' +
@@ -477,15 +565,30 @@
         '<strong>Horario:</strong> ' + agState.slotHora + '<br>' +
         '<strong>Queixa:</strong> ' + agState.queixa +
         '</div>' +
-        '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-5">Voltar</button><button class="btn btn-primary" id="ag-confirm-btn">Confirmar</button></div>';
+        '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-5">Voltar</button><button class="btn btn-primary" id="ag-confirm-btn">Confirmar Agendamento</button></div>';
 
       document.getElementById('ag-confirm-btn').addEventListener('click', function () {
         var r = call('bridge_agendamento_criar', [agState.cpf, agState.crm, agState.data, agState.slotIdx, agState.queixa], ['string', 'string', 'string', 'number', 'string']);
         if (r.ok) {
           toast('Agendamento criado! Protocolo: ' + r.protocolo);
           el.innerHTML =
-            '<div class="alert alert-success">Agendamento confirmado com sucesso!<br>Protocolo: <strong>' + r.protocolo + '</strong></div>' +
-            '<div class="btn-row"><button class="btn btn-primary" id="ag-novo-btn">Novo Agendamento</button></div>';
+            '<div class="confirmation-card">' +
+            '<div class="confirmation-icon">' + ICONS.check + '</div>' +
+            '<div class="confirmation-title">Agendamento Confirmado</div>' +
+            '<div class="confirmation-protocol">' +
+            '<div class="confirmation-protocol-label">Protocolo</div>' +
+            '<div class="confirmation-protocol-number">' + r.protocolo + '</div>' +
+            '</div>' +
+            '<div class="confirmation-details">' +
+            '<strong>Paciente:</strong> ' + agState.pacNome + '<br>' +
+            '<strong>Medico:</strong> ' + agState.medNome + '<br>' +
+            '<strong>Especialidade:</strong> ' + agState.espNome + '<br>' +
+            '<strong>Data:</strong> ' + agState.data + ' - ' + agState.slotHora + '<br>' +
+            '<strong>Queixa:</strong> ' + agState.queixa +
+            '</div>' +
+            '<div class="btn-row" style="justify-content:center;"><button class="btn btn-primary" id="ag-novo-btn">Novo Agendamento</button></div>' +
+            '</div>';
+          document.getElementById('ag-steps').innerHTML = '';
           document.getElementById('ag-novo-btn').addEventListener('click', initAgendamento);
         } else {
           toast(r.erro || 'Erro ao agendar.', 'error');
@@ -505,7 +608,6 @@
       return;
     }
 
-    // Separate morning and afternoon
     var manha = [];
     var tarde = [];
     for (var i = 0; i < slots.length; i++) {
@@ -534,18 +636,15 @@
     }
     el.innerHTML = html;
 
-    // Bind slot clicks
     var slotCards = el.querySelectorAll('.slot-card:not(.occupied)');
     for (var j = 0; j < slotCards.length; j++) {
       slotCards[j].addEventListener('click', function () {
-        // Deselect all
         var all = el.querySelectorAll('.slot-card');
         for (var x = 0; x < all.length; x++) all[x].classList.remove('selected');
         this.classList.add('selected');
         agState.slotIdx = parseInt(this.getAttribute('data-idx'), 10);
         agState.slotHora = this.getAttribute('data-hora');
 
-        // Add continue button if not already present
         if (!document.getElementById('ag-slot-next-btn')) {
           var btnRow = document.createElement('div');
           btnRow.className = 'btn-row';
@@ -577,8 +676,9 @@
 
   function setupCancelar() {
     document.getElementById('cancel-buscar-btn').addEventListener('click', function () {
+      clearAllFieldErrors();
       var proto = document.getElementById('cancel-proto').value.trim();
-      if (!proto) { toast('Informe o protocolo.', 'error'); return; }
+      if (!proto) { showFieldError('cancel-proto', 'Informe o protocolo'); return; }
       var protoNum = parseInt(proto, 10);
       var r = call('bridge_agendamento_buscar_protocolo', [protoNum], ['number']);
       var el = document.getElementById('cancel-resultado');
@@ -627,9 +727,13 @@
 
   function setupGradeMedico() {
     document.getElementById('grade-buscar-btn').addEventListener('click', function () {
+      clearAllFieldErrors();
       var crm = document.getElementById('grade-crm').value.trim();
       var data = document.getElementById('grade-data').value.trim();
-      if (!crm || !data) { toast('Preencha CRM e data.', 'error'); return; }
+      var hasError = false;
+      if (!crm) { showFieldError('grade-crm', 'Informe o CRM'); hasError = true; }
+      if (!data) { showFieldError('grade-data', 'Informe a data'); hasError = true; }
+      if (hasError) return;
 
       var med = call('bridge_medico_buscar_crm', [crm], ['string']);
       if (!med.encontrado) { toast('Medico nao encontrado.', 'error'); return; }
@@ -649,7 +753,6 @@
         return;
       }
 
-      // Separate morning/afternoon
       var manha = [];
       var tarde = [];
       for (var i = 0; i < r.slots.length; i++) {
@@ -660,14 +763,14 @@
 
       if (manha.length > 0) {
         html += '<div class="turno-label">Manha</div>';
-        for (var m = 0; m < manha.length; m++) {
-          html += gradeLineHtml(manha[m]);
+        for (var m1 = 0; m1 < manha.length; m1++) {
+          html += gradeLineHtml(manha[m1]);
         }
       }
       if (tarde.length > 0) {
         html += '<div class="turno-label">Tarde</div>';
-        for (var t = 0; t < tarde.length; t++) {
-          html += gradeLineHtml(tarde[t]);
+        for (var t1 = 0; t1 < tarde.length; t1++) {
+          html += gradeLineHtml(tarde[t1]);
         }
       }
       el.innerHTML = html;
@@ -684,14 +787,15 @@
 
   function setupAgendaDia() {
     document.getElementById('agdia-buscar-btn').addEventListener('click', function () {
+      clearAllFieldErrors();
       var data = document.getElementById('agdia-data').value.trim();
-      if (!data) { toast('Informe a data.', 'error'); return; }
+      if (!data) { showFieldError('agdia-data', 'Informe a data'); return; }
 
       var agenda = call('bridge_agenda_dia', [data], ['string']);
       var el = document.getElementById('agdia-resultado');
 
       if (!agenda || agenda.length === 0) {
-        el.innerHTML = '<div class="alert alert-info">Nenhum medico com grade para esta data.</div>';
+        el.innerHTML = emptyStateHtml('calendar', 'Nenhum medico com grade para esta data.');
         return;
       }
 
@@ -716,11 +820,11 @@
           }
           if (manha.length > 0) {
             html += '<div class="turno-label">Manha</div>';
-            for (var m = 0; m < manha.length; m++) html += gradeLineHtml(manha[m]);
+            for (var m2 = 0; m2 < manha.length; m2++) html += gradeLineHtml(manha[m2]);
           }
           if (tarde.length > 0) {
             html += '<div class="turno-label">Tarde</div>';
-            for (var t = 0; t < tarde.length; t++) html += gradeLineHtml(tarde[t]);
+            for (var t2 = 0; t2 < tarde.length; t2++) html += gradeLineHtml(tarde[t2]);
           }
         }
         html += '</div>';
@@ -745,6 +849,23 @@
       for (var i = 0; i < navBtns.length; i++) {
         navBtns[i].addEventListener('click', function () {
           navigate(this.getAttribute('data-screen'));
+        });
+      }
+
+      // Mobile sidebar toggle
+      var toggleBtn = document.getElementById('sidebar-toggle');
+      var sidebarEl = document.getElementById('sidebar');
+      var overlayEl = document.getElementById('sidebar-overlay');
+      if (toggleBtn && sidebarEl) {
+        toggleBtn.addEventListener('click', function () {
+          sidebarEl.classList.toggle('open');
+          if (overlayEl) overlayEl.classList.toggle('open');
+        });
+      }
+      if (overlayEl) {
+        overlayEl.addEventListener('click', function () {
+          if (sidebarEl) sidebarEl.classList.remove('open');
+          overlayEl.classList.remove('open');
         });
       }
 

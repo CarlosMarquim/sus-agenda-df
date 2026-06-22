@@ -147,27 +147,38 @@ Nota de implementação: a ordem aqui (queixa antes da confirmação, depois do 
 |---|---|---|
 | `--color-primary` | `#1F5C99` | Botões primários, cabeçalhos, navegação ativa |
 | `--color-primary-hover` | `#174A7A` | Hover/pressed do botão primário |
+| `--color-primary-50` | `#EBF3FB` | Fundo suave de seleção, destaque de navegação ativa |
+| `--color-primary-100` | `#D4E5F5` | Destaque mais forte de seleção |
 | `--color-secondary` | `#2E9E6B` | Disponibilidade, confirmações de sucesso |
+| `--color-secondary-50` | `#E8F5EE` | Fundo suave de sucesso/confirmação |
 | `--color-danger` | `#C0392B` | Cancelamento, slots ocupados, erros |
+| `--color-danger-50` | `#FBEAE8` | Fundo suave de erro/cancelamento |
 | `--color-warning` | `#D69E2E` | Avisos não bloqueantes |
-| `--color-background` | `#F7F9FB` | Fundo geral |
+| `--color-warning-50` | `#FDF6E3` | Fundo suave de aviso |
+| `--color-background` | `#F5F7FA` | Fundo geral |
 | `--color-surface` | `#FFFFFF` | Cartões e formulários |
-| `--color-text-primary` | `#1A1A1A` | Texto principal |
-| `--color-text-secondary` | `#5C6770` | Texto auxiliar |
+| `--color-text-primary` | `#1A202C` | Texto principal |
+| `--color-text-secondary` | `#5A6778` | Texto auxiliar |
 | `--color-border` | `#D9E1E7` | Bordas e divisores |
+| `--color-border-light` | `#E8EDF2` | Bordas internas mais suaves |
 
-Vermelho reservado exclusivamente para ações destrutivas ou erro, nunca decorativo.
+Vermelho reservado exclusivamente para ações destrutivas ou erro, nunca decorativo. Tokens `-50` são versões de fundo suave usadas para estados (seleção, validação, confirmação), nunca como cor de texto.
 
 ### 5.3 Tipografia
 
+Par tipográfico deliberado: Plus Jakarta Sans para elementos de destaque, IBM Plex Sans para leitura contínua.
+
 | Token | Especificação | Uso |
 |---|---|---|
-| `--font-family` | `'Inter', system-ui, sans-serif` | Fonte única |
-| `--font-size-display` | 28px / bold | Título de tela |
-| `--font-size-heading` | 20px / semibold | Subtítulos |
-| `--font-size-body` | 16px / regular | Texto padrão (mínimo aceitável para uso prolongado) |
-| `--font-size-label` | 14px / medium | Labels de campo |
-| `--font-size-caption` | 12px / regular | Metadados |
+| `--font-display` | `'Plus Jakarta Sans', system-ui, sans-serif` | Títulos, métricas do dashboard, número de protocolo, horários de slot |
+| `--font-body` | `'IBM Plex Sans', system-ui, sans-serif` | Texto corrido, labels de formulário, navegação, badges, alertas |
+| `--font-size-display` | 24px / bold (700) | Título de tela (h1) |
+| `--font-size-heading` | 18px / semibold (600) | Subtítulos (h2) |
+| `--font-size-body` | 16px / regular (400) | Texto padrão (mínimo aceitável para uso prolongado) |
+| `--font-size-label` | 13px / medium (500) | Labels de campo |
+| `--font-size-caption` | 11–12px / regular (400) | Metadados, seções da sidebar |
+
+Justificativa do par: Plus Jakarta Sans tem terminais sutilmente arredondados que transmitem acolhimento institucional sem perder autoridade — ideal para os números que a atendente lê em voz alta (protocolo, horário). IBM Plex Sans foi projetada para uso institucional prolongado, com x-height otimizada para turnos de 8h. Ambas disponíveis via Google Fonts com `font-display: swap`.
 
 ### 5.4 Espaçamento
 
