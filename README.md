@@ -7,54 +7,15 @@ Professor: Murillo Edson de Carvalho Souza.
 
 ## Sobre o projeto
 
-O SUS-Agenda DF é um sistema operado pelo atendente da recepção de uma UBS para gerenciar todo o ciclo de um agendamento de consulta: identificação do paciente, registro da queixa principal, seleção de médico e horário, confirmação com número de protocolo e cancelamento.
+O SUS-Agenda DF gerencia o ciclo completo de agendamento de consultas em UBS do DF: identificação do paciente por CPF, registro obrigatório da queixa principal, seleção de médico e horário, confirmação com número de protocolo e cancelamento.
 
-O núcleo do sistema é desenvolvido em linguagem C, executado em terminal, atendendo aos requisitos técnicos da disciplina (structs, modularização em arquivos `.c`/`.h`, lógica de controle de fluxo). Uma interface gráfica web está planejada como evolução do projeto, documentada no plano de UX/UI deste repositório.
+O sistema resolve um problema real: atendentes de UBS marcam consultas sem registrar o motivo da visita, e o médico chega ao atendimento sem contexto clínico prévio. O SUS-Agenda DF adiciona dois elementos ausentes nos fluxos atuais — queixa principal obrigatória e histórico de consultas por CPF.
 
-O problema que o sistema resolve é real: atendentes de UBS hoje marcam consultas sem registrar o motivo da visita, e o médico chega ao atendimento sem contexto prévio. Não existe, na maior parte dos fluxos atuais, histórico consolidado do paciente acessível à recepção. O SUS-Agenda DF adiciona esses dois elementos — queixa principal obrigatória no agendamento e histórico por CPF — tornando o processo mais simples e organizado para a equipe de saúde.
+O núcleo do sistema é desenvolvido em linguagem C, atendendo aos requisitos técnicos da disciplina (structs, modularização em arquivos `.c`/`.h`, lógica de controle de fluxo). O mesmo core C é compilado para WebAssembly via Emscripten e executado diretamente no navegador, sem backend e sem reimplementação de lógica em JavaScript.
 
-## Estrutura do repositório
+## Como executar
 
-```
-sus-agenda-df/
-├── src/                          # código-fonte em C
-│   ├── main.c
-│   ├── paciente.c
-│   ├── medico.c
-│   ├── slot.c                    # grade de slots por dia (Fase 2)
-│   ├── menu.c
-│   ├── agendamento.c
-│   └── agenda.c
-├── include/                      # headers de interface
-│   ├── paciente.h
-│   ├── medico.h
-│   ├── slot.h
-│   ├── agendamento.h
-│   ├── agenda.h
-│   └── menu.h
-├── docs/                         # documentação do projeto
-│   ├── elicitacao.md             # 5W2H, público-alvo, stakeholders, custo computacional
-│   ├── arquitetura.md            # arquitetura do sistema
-│   ├── product-management.md     # MVP, roadmap, backlog, métricas de produto
-│   ├── seguranca-informacao.md   # plano de segurança da informação
-│   └── ux-ui.md                  # plano de UX/UI e design system
-├── imagens/                      # prints e capturas de tela do sistema
-├── executavel/                   # binário compilado
-├── Makefile
-└── manual.md                     # manual de uso do sistema
-```
-
-## Documentação
-
-| Documento | Conteúdo |
-|---|---|
-| [docs/elicitacao.md](docs/elicitacao.md) | Levantamento de requisitos: 5W2H, público-alvo, stakeholders, custo computacional |
-| [docs/arquitetura.md](docs/arquitetura.md) | Módulos, estruturas de dados, fluxo de camadas, estrutura de arquivos |
-| [docs/product-management.md](docs/product-management.md) | Problema de negócio, MVP, backlog priorizado, roadmap, métricas de sucesso |
-| [docs/seguranca-informacao.md](docs/seguranca-informacao.md) | Controle de acesso, dados sensíveis, LGPD, auditoria, plano de resposta |
-| [docs/ux-ui.md](docs/ux-ui.md) | Personas, fluxos de usuário, design system, wireframes da futura interface gráfica |
-
-## Como compilar e executar
+### Terminal (C nativo)
 
 ```bash
 make
@@ -62,6 +23,61 @@ make
 ```
 
 Requer apenas `gcc` e a biblioteca padrão de C. Sem dependências externas.
+
+### Frontend web (WebAssembly)
+
+```bash
+make wasm
+python -m http.server 8080 --directory web
+```
+
+Abrir `http://localhost:8080` no navegador. Requer Emscripten instalado para o build; os arquivos `.wasm` e `.js` já estão incluídos no repositório para execução direta sem recompilar.
+
+Após o carregamento inicial, o sistema roda completamente offline. Os dados vivem em memória do módulo WebAssembly — comportamento equivalente ao terminal.
+
+## Estrutura do repositório
+
+```
+sus-agenda-df/
+├── web/                          # frontend web
+│   ├── index.html                # página única (SPA)
+│   ├── style.css                 # design system completo
+│   ├── app.js                    # navegação, renderização, chamadas ccall
+│   ├── sus-agenda.js             # glue code gerado pelo Emscripten
+│   └── sus-agenda.wasm           # core C compilado para WebAssembly
+├── src/                          # código-fonte em C
+│   ├── main.c                    # entry point do terminal
+│   ├── menu.c                    # navegação do terminal
+│   ├── paciente.c
+│   ├── medico.c
+│   ├── slot.c
+│   ├── agendamento.c
+│   ├── agenda.c
+│   └── bridge_wasm.c             # ponte C→JSON para o frontend WebAssembly
+├── include/                      # headers de interface
+│   └── *.h
+├── docs/                         # documentação do projeto
+│   ├── elicitacao.md             # 5W2H, público-alvo, stakeholders, custo computacional
+│   ├── arquitetura.md            # arquitetura do sistema e integração WebAssembly
+│   ├── product-management.md     # MVP, roadmap, backlog, métricas
+│   ├── seguranca-informacao.md   # segurança da informação e LGPD
+│   └── ux-ui.md                  # design system e fluxos de usuário
+├── imagens/                      # prints do sistema
+├── executavel/                   # binário compilado (terminal)
+├── Makefile
+├── manual.md
+└── README.md
+```
+
+## Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [docs/elicitacao.md](docs/elicitacao.md) | 5W2H, público-alvo, stakeholders, custo computacional |
+| [docs/arquitetura.md](docs/arquitetura.md) | Módulos, estruturas de dados, WebAssembly, fluxo de camadas |
+| [docs/product-management.md](docs/product-management.md) | Problema de negócio, MVP, backlog, roadmap, métricas |
+| [docs/seguranca-informacao.md](docs/seguranca-informacao.md) | Controle de acesso, dados sensíveis, LGPD |
+| [docs/ux-ui.md](docs/ux-ui.md) | Personas, fluxos de usuário, design system implementado |
 
 ## Status do desenvolvimento
 
@@ -71,10 +87,9 @@ Requer apenas `gcc` e a biblioteca padrão de C. Sem dependências externas.
 | 2 — Médicos e grade de slots | Cadastro de médicos, disponibilidade por turno, grade de slots | Concluída |
 | 3 — Agendamento completo | Registro de queixa, validação de conflito, protocolo, cancelamento | Concluída |
 | 4 — Agenda e documentação | Visões de agenda, ajustes finais, documentação | Concluída |
-
-Prazo de entrega: 25 de junho de 2026.
+| 5 — Frontend WebAssembly | Interface web com core C compilado para WASM via Emscripten | Concluída |
 
 ## Equipe
 
-Desenvolvimento técnico: Carlos.
+Desenvolvimento técnico (core C e frontend WebAssembly): Carlos.
 Demais responsabilidades do grupo: ver `docs/product-management.md`.

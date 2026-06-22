@@ -124,12 +124,49 @@ sus-agenda-df/
 └── manual.md
 ```
 
-## 7. Evolução para Interface Gráfica
+## 7. Interface Web — WebAssembly via Emscripten
 
-A arquitetura modular permite duas estratégias de evolução para uma interface gráfica web, sem reescrever a lógica de negócio em C:
+A interface gráfica web foi implementada compilando o core C diretamente para WebAssembly via Emscripten. Nenhuma lógica de negócio foi reimplementada em JavaScript.
 
-**Estratégia A — API intermediária.** Um pequeno servidor (Python/Flask ou Node/Express) expõe endpoints HTTP que chamam o executável C via processo externo, ou leem/escrevem o mesmo arquivo de persistência usado pelo terminal. O frontend web consome esses endpoints.
+### 7.1 Estratégia adotada
 
-**Estratégia B — Reimplementação da lógica.** A lógica de negócio (validações, regras de conflito) é portada para a linguagem do backend escolhido, mantendo a versão em C como o artefato avaliado na disciplina. Essa é a estratégia mais simples de implementar dado o prazo do projeto, e é a adotada no plano de UX/UI deste repositório.
+O mesmo código C que executa no terminal é compilado para WASM com `make wasm`. O JavaScript atua exclusivamente como camada de apresentação: navega entre telas, renderiza HTML e chama funções C via `Module.ccall()`.
 
-Detalhes de paleta, componentes e wireframes da interface gráfica estão documentados em `docs/ux-ui.md`.
+### 7.2 Camada de ponte (bridge_wasm.c)
+
+`src/bridge_wasm.c` expõe funções C com assinaturas simples que o JavaScript pode chamar diretamente. Cada função recebe parâmetros primitivos (strings e inteiros) e retorna JSON formatado com `snprintf`. Exemplo:
+
+```c
+// bridge_wasm.c
+char* bridge_paciente_cadastrar(const char* nome, const char* cpf,
+                                 const char* dataNasc, const char* telefone) {
+    // chama paciente_registrar() — mesma função usada pelo terminal
+    // retorna: {"sucesso": true, "id": 3}
+    //       ou {"sucesso": false, "erro": "CPF já cadastrado"}
+}
+```
+
+`main.c` e `menu.c` não entram no build WASM — são exclusivos do terminal.
+
+### 7.3 Estrutura do frontend
+
+```
+web/
+├── index.html        # SPA — uma única página, telas trocadas via JS
+├── style.css         # design system completo (paleta, tipografia, componentes)
+├── app.js            # navegação entre telas e chamadas Module.ccall()
+├── sus-agenda.js     # glue code gerado pelo Emscripten
+└── sus-agenda.wasm   # core C compilado para WebAssembly
+```
+
+Fontes externas: apenas Google Fonts (Plus Jakarta Sans e IBM Plex Sans) via `<link>`. Zero frameworks, zero bibliotecas de componentes.
+
+### 7.4 Comportamento em execução
+
+- Após o carregamento inicial, o sistema roda completamente offline no cliente
+- Dados vivem em memória do módulo WASM — perdem-se ao fechar a aba, comportamento equivalente ao terminal
+- Para servir localmente: `python -m http.server 8080 --directory web`
+
+### 7.5 Separação de responsabilidades mantida
+
+A separação de camadas descrita na seção 1 se preserva integralmente: o JavaScript substitui `menu.c` como camada de apresentação, enquanto toda a lógica de negócio permanece nos módulos C originais. Trocar o frontend por outro framework no futuro não exigiria alterar nenhum arquivo `.c` do domínio.

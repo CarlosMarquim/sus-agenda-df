@@ -33,7 +33,7 @@ Setor: saúde pública do Distrito Federal, especificamente Unidades Básicas de
 | Cancelamento de consulta | Por protocolo ou CPF, com liberação automática do slot | Sim |
 | Agenda do dia consolidada | Todos os médicos, slots e queixas em uma única tela | Sim |
 | Agenda por médico e data | Visão específica de um médico num dia selecionado | Sim |
-| Interface gráfica web | Camada visual substituindo o terminal | Fora do MVP, planejada como evolução |
+| Interface gráfica web (WebAssembly) | SPA em HTML/CSS/JS com core C compilado via Emscripten | Implementada |
 | Notificação de paciente (SMS/app) | Aviso automático de confirmação ou lembrete | Fora do escopo |
 | Múltiplas UBS / multiusuário | Centralização entre unidades | Fora do escopo |
 
@@ -64,7 +64,7 @@ Prazo total: até 25 de junho de 2026, dividido em 4 fases.
 | 2 | Até 18/06 | Cadastro de médicos, disponibilidade por turno, exibição de slots livres e ocupados | Concluída |
 | 3 | Até 22/06 | Agendamento completo com registro de queixa, validação de conflito, protocolo, cancelamento | Concluída |
 | 4 | Até 25/06 | Visões de agenda, ajustes finais, documentação, commits organizados | Concluída |
-| Contingência | Após 25/06 ou em paralelo se houver tempo | Interface gráfica web substituindo o terminal | Planejada, não bloqueia entrega |
+| 5 | Após 25/06 | Interface web com core C compilado para WebAssembly via Emscripten | Concluída |
 
 ## 7. Regras de Negócio (resumo de produto)
 

@@ -2,9 +2,9 @@
 
 ## 1. Objetivo deste Documento
 
-Este documento especifica o design da futura interface gráfica web do SUS-Agenda DF, que substituirá o terminal como camada de apresentação do sistema. A lógica de negócio (validações, regras de conflito, estruturas de dados) permanece a mesma descrita em `docs/arquitetura.md`; o que muda é exclusivamente a forma como o atendente interage com o sistema.
+Este documento especifica o design da interface gráfica web do SUS-Agenda DF, implementada como SPA (Single Page Application) em HTML/CSS/JS puro, com o core C compilado para WebAssembly via Emscripten. A lógica de negócio (validações, regras de conflito, estruturas de dados) permanece integralmente nos módulos C originais, conforme descrito em `docs/arquitetura.md`. O JavaScript atua exclusivamente como camada de apresentação.
 
-O documento cobre perfil de usuário, fluxos de tela, design system (paleta, tipografia, componentes) e wireframes descritos o suficiente para implementação direta.
+O documento cobre perfil de usuário, fluxos de tela, design system (paleta, tipografia, componentes) implementados em `web/style.css` e `web/app.js`.
 
 ## 2. Perfil Completo do Usuário
 
@@ -207,6 +207,17 @@ Resumo em formato de cartão: nome e CPF do paciente, médico e especialidade, d
 - Estados de foco visíveis (outline) em todos os elementos navegáveis por teclado, já que parte do fluxo pode ser operado sem mouse.
 - Nenhuma informação crítica é transmitida exclusivamente por cor (ex: status de slot usa cor e texto/ícone simultaneamente).
 
-## 7. Stack de Implementação Planejada
+## 7. Stack Implementada
 
-Conforme alinhado no planejamento do projeto, a interface gráfica será implementada como aplicação web, com a lógica de negócio reescrita na linguagem do backend escolhido (Python), mantendo a versão em C como artefato avaliado na disciplina de Algoritmos e Lógica de Programação. Essa interface é tratada como entrega de contingência, condicionada à conclusão das Fases 3 e 4 do núcleo em C, conforme `docs/product-management.md`.
+A interface web foi implementada sem frameworks e sem bibliotecas de componentes:
+
+| Camada | Tecnologia |
+|---|---|
+| Marcação | HTML5 — página única (SPA), telas trocadas via JS |
+| Estilo | CSS puro — design system completo em `web/style.css` |
+| Comportamento | JavaScript puro — navegação e chamadas `Module.ccall()` em `web/app.js` |
+| Lógica de negócio | Core C compilado para WebAssembly via Emscripten |
+| Ponte C→JS | `src/bridge_wasm.c` — funções que retornam JSON via `snprintf` |
+| Fontes | Google Fonts (Plus Jakarta Sans e IBM Plex Sans) — único recurso externo |
+
+O build WASM é gerado com `make wasm`. Os arquivos `web/sus-agenda.js` e `web/sus-agenda.wasm` estão incluídos no repositório para execução direta sem recompilar.

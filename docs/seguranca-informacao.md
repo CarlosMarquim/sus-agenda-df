@@ -23,7 +23,7 @@ O sistema é operado exclusivamente via terminal local da recepção da UBS, sem
 |---|---|
 | Acesso ao sistema | Restrito ao terminal local da recepção, sem login de usuário na versão atual (escopo acadêmico) |
 | Acesso aos dados | Apenas através das funções do sistema, sem edição direta de arquivos de dados por usuários finais |
-| Evolução futura (interface web) | Exigirá autenticação de atendente por usuário e senha, e controle de sessão, antes de qualquer exposição em rede |
+| Interface web (implementada) | A SPA roda inteiramente no cliente via WebAssembly — sem servidor backend e sem transmissão de dados pela rede. Os dados vivem em memória do módulo WASM e são perdidos ao fechar a aba, comportamento equivalente ao terminal. Uma versão com persistência em servidor exigiria autenticação, HTTPS e controle de sessão antes de qualquer exposição em rede. |
 
 ## 4. Integridade dos Dados
 
@@ -64,7 +64,7 @@ O sistema observa os seguintes princípios da LGPD, mesmo operando em escopo aca
 | Acesso físico não autorizado ao terminal | Baixa (ambiente controlado de recepção) | Alto (exposição de dados de saúde) | Restringir acesso físico ao computador da recepção; fora do escopo de código, é controle administrativo da UBS |
 | Perda de dados por encerramento do programa (modelo em memória) | Alta, se a persistência não for implementada | Médio (perda de histórico entre sessões) | Implementar persistência em arquivo conforme orientação do professor (ver `docs/arquitetura.md`, seção 5) |
 | Corrupção de arquivo de persistência | Baixa | Médio | Validação de integridade ao carregar dados na inicialização, com tratamento de erro caso o arquivo esteja corrompido |
-| Exposição de dados ao migrar para interface web | Média, se a migração ocorrer sem cuidado | Alto | Qualquer evolução para versão web deve implementar autenticação, HTTPS e controle de sessão antes de qualquer exposição pública, conforme descrito na seção 3 |
+| Exposição de dados na interface web atual | Baixa — SPA roda no cliente via WASM, sem backend | Baixo | Dados em memória do módulo WASM, sem transmissão de rede. Risco aumenta apenas se uma versão com servidor for implementada no futuro. |
 
 ## 9. Limitações do Escopo Atual
 
