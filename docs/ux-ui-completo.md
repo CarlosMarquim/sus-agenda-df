@@ -8,7 +8,7 @@ A lógica de negócio (validações, regras de conflito, geração de protocolo,
 
 ## 2. Usuários e contexto de uso
 
-### 2.1 Persona 1 — Ana, Atendente de Recepção
+### 2.1 Persona 1 — Ana, Atendente ficticia de Recepção
 
 | Campo | Descrição |
 |---|---|
@@ -20,7 +20,7 @@ A lógica de negócio (validações, regras de conflito, geração de protocolo,
 | Frustrações conhecidas | Sistemas com muitos cliques para uma tarefa simples; telas com informação demais ao mesmo tempo; mensagens de erro confusas ou genéricas |
 | Necessidade de design | Fluxo linear e previsível, poucos cliques por tarefa, texto grande e legível, feedback imediato e claro de cada ação |
 
-### 2.2 Persona 2 — Dr. Carlos, Médico de Família
+### 2.2 Persona 2 — Dr. Carlos, Médico de Família ficticio
 
 | Campo | Descrição |
 |---|---|
