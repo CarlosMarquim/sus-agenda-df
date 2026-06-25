@@ -1,5 +1,9 @@
 # SUS-Agenda DF
 
+> **SUS-Agenda DF** é um sistema de gerenciamento de agendamentos para Unidades Básicas de Saúde do Distrito Federal, desenvolvido em linguagem C. Resolve um problema real e silencioso do fluxo de recepção em UBS: consultas são marcadas sem registro do motivo da visita, e o médico chega ao atendimento sem contexto clínico prévio. O sistema torna o registro da queixa principal obrigatório no ato do agendamento — garantindo que a equipe de saúde chegue preparada a cada consulta — e consolida o histórico de cada paciente acessível por CPF, eliminando dependência de papel ou planilha paralela.
+>
+> O núcleo de lógica é integralmente desenvolvido em C (structs, modularização, controle de fluxo), compilado para WebAssembly via Emscripten e executado diretamente no navegador, sem backend. A mesma base de código serve o terminal nativo e a interface web, sem duplicação de regras de negócio.
+
 Sistema de gestão de agendamentos para Unidades Básicas de Saúde (UBS) do Distrito Federal.
 
 Projeto final da disciplina de Algoritmos e Lógica de Programação — IDP, semestre 1/2026.
