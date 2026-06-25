@@ -77,6 +77,11 @@ static void opcao_buscar_paciente(void) {
         cpf[0] = '\0';
     }
 
+    if (!validar_cpf_formato(cpf)) {
+        printf("CPF invalido. Digite 11 digitos numericos.\n");
+        return;
+    }
+
     idx = buscar_paciente_cpf(cpf);
     if (idx == -1) {
         printf("Erro: paciente nao encontrado para o CPF informado.\n");

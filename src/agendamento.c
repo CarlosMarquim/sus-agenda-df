@@ -246,6 +246,11 @@ void agendamento_criar_terminal(void) {
     printf("CPF do paciente (11 digitos): ");
     ler_linha(cpf, sizeof(cpf));
 
+    if (!validar_cpf_formato(cpf)) {
+        printf("CPF invalido. Digite 11 digitos numericos.\n");
+        return;
+    }
+
     idx_paciente = buscar_paciente_cpf(cpf);
     if (idx_paciente == -1) {
         printf("Paciente nao encontrado.\n");
