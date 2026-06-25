@@ -833,6 +833,94 @@
     });
   }
 
+  // ── Demo Data ────────────────────────────────────────────────────────
+
+  function populateDemoData() {
+    var i, d;
+
+    var medicos = [
+      ['CG001', 'Dr. Ricardo Alves Mendonca', 0],
+      ['CG002', 'Dra. Fernanda Costa Ribeiro', 0],
+      ['PD001', 'Dr. Paulo Henrique Mendes', 1],
+      ['PD002', 'Dra. Camila Torres Vieira', 1],
+      ['GN001', 'Dra. Ana Lucia Rodrigues', 2],
+      ['GN002', 'Dra. Patricia Sousa Lima', 2],
+      ['OR001', 'Dr. Marcos Eduardo Oliveira', 3],
+      ['OR002', 'Dr. Thiago Barros Santos', 3],
+      ['GT001', 'Dr. Roberto Nascimento Filho', 4],
+      ['GT002', 'Dra. Luciana Pires Monteiro', 4]
+    ];
+    for (i = 0; i < medicos.length; i++) {
+      call('bridge_medico_cadastrar', medicos[i], ['string', 'string', 'number']);
+    }
+
+    var disponibilidade = [
+      ['CG001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
+      ['CG002', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1]],
+      ['PD001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
+      ['PD002', [2,1,3,1,4,1,5,1]],
+      ['GN001', [1,0,2,0,3,0,4,0,5,0]],
+      ['GN002', [3,0,3,1,4,0,4,1,5,0,5,1]],
+      ['OR001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
+      ['OR002', [1,0,2,0,3,0]],
+      ['GT001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
+      ['GT002', [2,0,2,1,3,0,3,1,4,0,4,1]]
+    ];
+    for (i = 0; i < disponibilidade.length; i++) {
+      var crm = disponibilidade[i][0];
+      var pairs = disponibilidade[i][1];
+      for (d = 0; d < pairs.length; d += 2) {
+        call('bridge_medico_disponibilidade_alternar', [crm, pairs[d], pairs[d+1]], ['string', 'number', 'number']);
+      }
+    }
+
+    var pacientes = [
+      ['12345678901', 'Maria da Silva Santos', '15/03/1985', '(61)99801-2345'],
+      ['23456789012', 'Joao Carlos Pereira', '22/07/1972', '(61)99802-3456'],
+      ['34567890123', 'Ana Paula Ferreira', '08/11/1990', '(61)99803-4567'],
+      ['45678901234', 'Carlos Eduardo Lima', '30/01/1965', '(61)99804-5678'],
+      ['56789012345', 'Beatriz Almeida Souza', '14/06/2018', '(61)99805-6789'],
+      ['67890123456', 'Roberto Vasconcelos', '05/09/1958', '(61)99806-7890'],
+      ['78901234567', 'Luiz Henrique Barbosa', '12/04/1995', '(61)99807-8901'],
+      ['89012345678', 'Camila Regina Torres', '20/08/2001', '(61)99808-9012'],
+      ['90123456789', 'Jose Augusto Cardoso', '03/12/1948', '(61)99809-0123'],
+      ['01234567890', 'Sandra Melo Carvalho', '27/05/1978', '(61)99800-1234']
+    ];
+    for (i = 0; i < pacientes.length; i++) {
+      call('bridge_paciente_cadastrar', pacientes[i], ['string', 'string', 'string', 'string']);
+    }
+
+    var agendamentos = [
+      ['12345678901', 'CG001', '19/06/2026', 2, 'dor de cabeca persistente ha uma semana'],
+      ['23456789012', 'CG001', '19/06/2026', 4, 'pressao alta, tonturas pela manha'],
+      ['34567890123', 'GN001', '19/06/2026', 1, 'dor pelvica ha duas semanas'],
+      ['45678901234', 'OR001', '18/06/2026', 3, 'dor no joelho direito ao subir escadas'],
+      ['56789012345', 'PD001', '18/06/2026', 0, 'febre e tosse ha tres dias, crianca de 8 anos'],
+      ['67890123456', 'CG002', '22/06/2026', 5, 'consulta de rotina, hipertenso cronico'],
+      ['78901234567', 'OR001', '22/06/2026', 2, 'dor no ombro esquerdo apos queda'],
+      ['89012345678', 'CG001', '23/06/2026', 1, 'ansiedade e insonia ha tres semanas'],
+      ['90123456789', 'GT001', '23/06/2026', 3, 'dor abdominal recorrente apos refeicoes'],
+      ['01234567890', 'GN001', '24/06/2026', 0, 'retorno pos-consulta de novembro'],
+      ['12345678901', 'CG002', '24/06/2026', 6, 'retorno - cefaleia controlada, renovar receita'],
+      ['23456789012', 'CG001', '26/06/2026', 1, 'hipertensao, verificar medicacao'],
+      ['45678901234', 'OR001', '26/06/2026', 3, 'dor no joelho, retorno apos raio-x'],
+      ['56789012345', 'PD001', '26/06/2026', 0, 'tosse persistente, crianca melhorou pouco'],
+      ['67890123456', 'GT001', '26/06/2026', 2, 'dor abdominal, resultado de exame'],
+      ['89012345678', 'GN001', '26/06/2026', 1, 'preventivo anual'],
+      ['78901234567', 'OR001', '29/06/2026', 4, 'dor no ombro, retorno apos fisioterapia'],
+      ['90123456789', 'CG002', '29/06/2026', 2, 'diabetes tipo 2, controle trimestral'],
+      ['34567890123', 'GN001', '30/06/2026', 0, 'resultado de ultrassom pelvico'],
+      ['01234567890', 'CG001', '30/06/2026', 5, 'dor nas costas ha uma semana']
+    ];
+    for (i = 0; i < agendamentos.length; i++) {
+      var ag = agendamentos[i];
+      call('bridge_agendamento_criar', [ag[0], ag[1], ag[2], ag[3], ag[4]], ['string', 'string', 'string', 'number', 'string']);
+    }
+
+    call('bridge_agendamento_cancelar', [3], ['number']);
+    call('bridge_agendamento_cancelar', [8], ['number']);
+  }
+
   // ── Init ─────────────────────────────────────────────────────────────
 
   function init() {
@@ -842,6 +930,7 @@
       document.getElementById('app').style.display = 'flex';
 
       loadEspecialidades();
+      populateDemoData();
       loadDashboard();
 
       // Navigation
