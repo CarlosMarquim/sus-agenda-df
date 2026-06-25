@@ -387,8 +387,8 @@
     queixa: ''
   };
 
-  var AG_STEPS = 6;
-  var AG_LABELS = ['Paciente', 'Especialidade', 'Medico', 'Horario', 'Queixa', 'Confirmacao'];
+  var AG_STEPS = 5;
+  var AG_LABELS = ['Paciente', 'Especialidade', 'Horario', 'Queixa', 'Confirmacao'];
 
   function renderSteps() {
     var el = document.getElementById('ag-steps');
@@ -474,96 +474,108 @@
 
     } else if (agState.step === 2) {
       var medicos = call('bridge_medico_buscar_especialidade', [agState.espIdx], ['number']);
-      var html2 = '<h3>Selecionar Medico</h3>' +
+      var html2 = '<h3>Selecionar Data e Horario</h3>' +
         '<div class="summary-box"><strong>Paciente:</strong> ' + agState.pacNome + '<br><strong>Especialidade:</strong> ' + agState.espNome + '</div>';
+
       if (!medicos || medicos.length === 0) {
         html2 += '<div class="alert alert-danger">Nenhum medico encontrado para esta especialidade.</div>';
         html2 += '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-2">Voltar</button></div>';
         el.innerHTML = html2;
-        document.getElementById('ag-back-2').addEventListener('click', function () {
-          agState.step = 1;
-          renderAgStep();
-        });
+        document.getElementById('ag-back-2').addEventListener('click', function () { agState.step = 1; renderAgStep(); });
         return;
       }
-      html2 += '<div style="margin-top:16px;">';
-      for (var k = 0; k < medicos.length; k++) {
-        var m = medicos[k];
-        html2 += '<div class="doctor-section" style="cursor:pointer;" data-crm="' + m.crm + '" data-nome="' + m.nome + '">' +
-          '<div class="doctor-header">' +
-          '<div class="doctor-avatar">' + m.nome.charAt(0).toUpperCase() + '</div>' +
-          '<div><div class="doctor-name">' + m.nome + '</div><div class="doctor-spec">CRM: ' + m.crm + '</div></div>' +
-          '</div></div>';
+
+      var medicoDisps = [];
+      for (var md = 0; md < medicos.length; md++) {
+        var dr = call('bridge_medico_disponibilidade_obter', [medicos[md].crm], ['string']);
+        medicoDisps.push(dr.ok ? dr.disp : null);
       }
-      html2 += '</div>';
+
+      var hoje = new Date();
+      var diasCal = [];
+      var diasNome = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+      for (var di = 0; di < 14; di++) {
+        var dt = new Date(hoje); dt.setDate(hoje.getDate() + di);
+        var ddS = String(dt.getDate()).padStart(2, '0');
+        var mmS = String(dt.getMonth() + 1).padStart(2, '0');
+        diasCal.push({ full: ddS + '/' + mmS + '/' + dt.getFullYear(), short: ddS + '/' + mmS, name: diasNome[dt.getDay()], dow: dt.getDay() });
+      }
+
+      var temAlgum = false;
+      for (var dc = 0; dc < diasCal.length; dc++) {
+        var diaInfo = diasCal[dc];
+        var diaHtml = '';
+        for (var mi = 0; mi < medicos.length; mi++) {
+          var mDisp = medicoDisps[mi];
+          if (!mDisp || (!mDisp[diaInfo.dow][0] && !mDisp[diaInfo.dow][1])) continue;
+          var gr = call('bridge_grade_obter_ou_criar', [medicos[mi].crm, diaInfo.full], ['string', 'string']);
+          if (!gr.ok || !gr.slots) continue;
+          var livres = [];
+          for (var si = 0; si < gr.slots.length; si++) { if (!gr.slots[si].ocupado) livres.push(gr.slots[si]); }
+          if (livres.length === 0) continue;
+          diaHtml += '<div class="date-doctor"><div class="date-doctor-name">' + medicos[mi].nome + ' <span style="color:var(--color-text-secondary);font-size:12px;">CRM: ' + medicos[mi].crm + '</span></div><div class="slots-grid">';
+          for (var li = 0; li < livres.length; li++) {
+            diaHtml += '<div class="slot-card" data-crm="' + medicos[mi].crm + '" data-nome="' + medicos[mi].nome + '" data-date="' + diaInfo.full + '" data-idx="' + livres[li].idx + '" data-hora="' + livres[li].hora + '"><div class="slot-time">' + livres[li].hora + '</div></div>';
+          }
+          diaHtml += '</div></div>';
+        }
+        if (diaHtml) {
+          temAlgum = true;
+          html2 += '<div class="date-card"><div class="date-card-header">' + diaInfo.short + ' <span>' + diaInfo.name + '</span></div>' + diaHtml + '</div>';
+        }
+      }
+
+      if (!temAlgum) {
+        html2 += '<div class="alert alert-info">Nenhum horario disponivel nos proximos 14 dias para ' + agState.espNome + '.</div>';
+      }
+
+      html2 += '<div id="ag-cal-btn-area"></div>';
       html2 += '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-2">Voltar</button></div>';
       el.innerHTML = html2;
 
-      var docs = document.querySelectorAll('#ag-content .doctor-section');
-      for (var l = 0; l < docs.length; l++) {
-        docs[l].addEventListener('click', function () {
+      var calSlots = el.querySelectorAll('.slot-card');
+      for (var cs = 0; cs < calSlots.length; cs++) {
+        calSlots[cs].addEventListener('click', function () {
+          var allS = el.querySelectorAll('.slot-card');
+          for (var x = 0; x < allS.length; x++) allS[x].classList.remove('selected');
+          this.classList.add('selected');
           agState.crm = this.getAttribute('data-crm');
           agState.medNome = this.getAttribute('data-nome');
-          agState.step = 3;
-          renderAgStep();
+          agState.data = this.getAttribute('data-date');
+          agState.slotIdx = parseInt(this.getAttribute('data-idx'), 10);
+          agState.slotHora = this.getAttribute('data-hora');
+          var area = document.getElementById('ag-cal-btn-area');
+          if (!document.getElementById('ag-cal-next')) {
+            area.innerHTML = '<div class="btn-row"><button class="btn btn-primary" id="ag-cal-next">Continuar</button></div>';
+            document.getElementById('ag-cal-next').addEventListener('click', function () { agState.step = 3; renderAgStep(); });
+          }
         });
       }
-      document.getElementById('ag-back-2').addEventListener('click', function () {
-        agState.step = 1;
-        renderAgStep();
-      });
+
+      document.getElementById('ag-back-2').addEventListener('click', function () { agState.step = 1; renderAgStep(); });
 
     } else if (agState.step === 3) {
-      el.innerHTML =
-        '<h3>Selecionar Data e Horario</h3>' +
-        '<div class="summary-box"><strong>Paciente:</strong> ' + agState.pacNome + '<br><strong>Medico:</strong> ' + agState.medNome + ' (' + agState.espNome + ')</div>' +
-        '<div style="max-width:400px;margin-top:16px;">' +
-        '<div class="form-group"><label>Data da Consulta</label><input type="text" id="ag-data" placeholder="DD/MM/AAAA"></div>' +
-        '<div class="btn-row"><button class="btn btn-primary" id="ag-grade-btn">Ver Horarios</button></div>' +
-        '</div>' +
-        '<div id="ag-slots" style="margin-top:16px;"></div>' +
-        '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-3">Voltar</button></div>';
-
-      document.getElementById('ag-grade-btn').addEventListener('click', function () {
-        clearAllFieldErrors();
-        var data = document.getElementById('ag-data').value.trim();
-        if (!data) { showFieldError('ag-data', 'Informe a data'); return; }
-        agState.data = normalizeDate(data);
-        var r = call('bridge_grade_obter_ou_criar', [agState.crm, agState.data], ['string', 'string']);
-        if (!r.ok) {
-          toast('Erro ao obter grade.', 'error');
-          return;
-        }
-        renderSlots(r.slots);
-      });
-
-      document.getElementById('ag-back-3').addEventListener('click', function () {
-        agState.step = 2;
-        renderAgStep();
-      });
-
-    } else if (agState.step === 4) {
       el.innerHTML =
         '<h3>Informar Queixa</h3>' +
         '<div class="summary-box"><strong>Paciente:</strong> ' + agState.pacNome + '<br><strong>Medico:</strong> ' + agState.medNome + '<br><strong>Data:</strong> ' + agState.data + '<br><strong>Horario:</strong> ' + agState.slotHora + '</div>' +
         '<div style="max-width:480px;margin-top:16px;">' +
         '<div class="form-group"><label>Queixa / Motivo da Consulta</label><textarea id="ag-queixa" placeholder="Descreva a queixa do paciente"></textarea></div>' +
-        '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-4">Voltar</button><button class="btn btn-primary" id="ag-queixa-btn">Continuar</button></div>' +
+        '<div class="btn-row"><button class="btn btn-secondary" id="ag-back-3">Voltar</button><button class="btn btn-primary" id="ag-queixa-btn">Continuar</button></div>' +
         '</div>';
 
       document.getElementById('ag-queixa-btn').addEventListener('click', function () {
         clearAllFieldErrors();
         agState.queixa = document.getElementById('ag-queixa').value.trim();
         if (!agState.queixa) { showFieldError('ag-queixa', 'Informe a queixa do paciente'); return; }
-        agState.step = 5;
+        agState.step = 4;
         renderAgStep();
       });
-      document.getElementById('ag-back-4').addEventListener('click', function () {
-        agState.step = 3;
+      document.getElementById('ag-back-3').addEventListener('click', function () {
+        agState.step = 2;
         renderAgStep();
       });
 
-    } else if (agState.step === 5) {
+    } else if (agState.step === 4) {
       el.innerHTML =
         '<h3>Confirmar Agendamento</h3>' +
         '<div class="summary-box">' +
@@ -604,7 +616,7 @@
         }
       });
       document.getElementById('ag-back-5').addEventListener('click', function () {
-        agState.step = 4;
+        agState.step = 3;
         renderAgStep();
       });
     }
@@ -738,49 +750,54 @@
     document.getElementById('grade-buscar-btn').addEventListener('click', function () {
       clearAllFieldErrors();
       var crm = document.getElementById('grade-crm').value.trim();
-      var data = normalizeDate(document.getElementById('grade-data').value.trim());
-      var hasError = false;
-      if (!crm) { showFieldError('grade-crm', 'Informe o CRM'); hasError = true; }
-      if (!data) { showFieldError('grade-data', 'Informe a data'); hasError = true; }
-      if (hasError) return;
+      if (!crm) { showFieldError('grade-crm', 'Informe o CRM'); return; }
 
       var med = call('bridge_medico_buscar_crm', [crm], ['string']);
       if (!med.encontrado) { toast('Medico nao encontrado.', 'error'); return; }
 
-      var r = call('bridge_grade_obter_ou_criar', [crm, data], ['string', 'string']);
-      var el = document.getElementById('grade-resultado');
-      if (!r.ok) { toast('Erro ao obter grade.', 'error'); return; }
+      var dispR = call('bridge_medico_disponibilidade_obter', [crm], ['string']);
+      var disp = dispR.ok ? dispR.disp : null;
 
+      var el = document.getElementById('grade-resultado');
       var html = '<div class="doctor-section"><div class="doctor-header">' +
         '<div class="doctor-avatar">' + med.nome.charAt(0).toUpperCase() + '</div>' +
         '<div><div class="doctor-name">' + med.nome + '</div><div class="doctor-spec">' + med.especialidade + ' - CRM: ' + med.crm + '</div></div>' +
         '</div></div>';
 
-      if (!r.slots || r.slots.length === 0) {
-        html += '<div class="alert alert-info">Nenhum horario disponivel nesta data.</div>';
-        el.innerHTML = html;
-        return;
+      var hoje = new Date();
+      var diasNome = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+      var temDia = false;
+
+      for (var gi = 0; gi < 14; gi++) {
+        var gd = new Date(hoje); gd.setDate(hoje.getDate() + gi);
+        var dow = gd.getDay();
+        if (disp && !disp[dow][0] && !disp[dow][1]) continue;
+
+        var gdStr = String(gd.getDate()).padStart(2, '0') + '/' + String(gd.getMonth() + 1).padStart(2, '0') + '/' + gd.getFullYear();
+        var gdShort = String(gd.getDate()).padStart(2, '0') + '/' + String(gd.getMonth() + 1).padStart(2, '0');
+
+        var gr = call('bridge_grade_obter_ou_criar', [crm, gdStr], ['string', 'string']);
+        if (!gr.ok || !gr.slots || gr.slots.length === 0) continue;
+
+        temDia = true;
+        html += '<div class="date-card"><div class="date-card-header">' + gdShort + ' <span>' + diasNome[dow] + '</span></div><div style="padding:var(--space-sm) var(--space-md) var(--space-md);">';
+
+        var turnoAtual = -1;
+        for (var si = 0; si < gr.slots.length; si++) {
+          var sl = gr.slots[si];
+          var hVal = parseInt(sl.hora.substring(0, 2), 10);
+          var turnoSl = hVal < 12 ? 0 : 1;
+          if (turnoSl !== turnoAtual) {
+            html += '<div class="turno-label">' + (turnoSl === 0 ? 'Manha' : 'Tarde') + '</div>';
+            turnoAtual = turnoSl;
+          }
+          html += gradeLineHtml(sl);
+        }
+        html += '</div></div>';
       }
 
-      var manha = [];
-      var tarde = [];
-      for (var i = 0; i < r.slots.length; i++) {
-        var hora = parseInt(r.slots[i].hora.substring(0, 2), 10);
-        if (hora < 12) manha.push(r.slots[i]);
-        else tarde.push(r.slots[i]);
-      }
-
-      if (manha.length > 0) {
-        html += '<div class="turno-label">Manha</div>';
-        for (var m1 = 0; m1 < manha.length; m1++) {
-          html += gradeLineHtml(manha[m1]);
-        }
-      }
-      if (tarde.length > 0) {
-        html += '<div class="turno-label">Tarde</div>';
-        for (var t1 = 0; t1 < tarde.length; t1++) {
-          html += gradeLineHtml(tarde[t1]);
-        }
+      if (!temDia) {
+        html += '<div class="alert alert-info">Nenhum horario disponivel nos proximos 14 dias.</div>';
       }
       el.innerHTML = html;
     });
