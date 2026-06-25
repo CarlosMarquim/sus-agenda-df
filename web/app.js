@@ -18,6 +18,15 @@
     return dd + '/' + mm + '/' + yyyy;
   }
 
+  function normalizeDate(input) {
+    if (!input) return input;
+    var s = input.replace(/\D/g, '');
+    if (s.length === 8) {
+      return s.substring(0, 2) + '/' + s.substring(2, 4) + '/' + s.substring(4, 8);
+    }
+    return input;
+  }
+
   // ── SVG Icons (reusable) ────────────────────────────────────────────
 
   var ICONS = {
@@ -519,8 +528,8 @@
         clearAllFieldErrors();
         var data = document.getElementById('ag-data').value.trim();
         if (!data) { showFieldError('ag-data', 'Informe a data'); return; }
-        agState.data = data;
-        var r = call('bridge_grade_obter_ou_criar', [agState.crm, data], ['string', 'string']);
+        agState.data = normalizeDate(data);
+        var r = call('bridge_grade_obter_ou_criar', [agState.crm, agState.data], ['string', 'string']);
         if (!r.ok) {
           toast('Erro ao obter grade.', 'error');
           return;
@@ -729,7 +738,7 @@
     document.getElementById('grade-buscar-btn').addEventListener('click', function () {
       clearAllFieldErrors();
       var crm = document.getElementById('grade-crm').value.trim();
-      var data = document.getElementById('grade-data').value.trim();
+      var data = normalizeDate(document.getElementById('grade-data').value.trim());
       var hasError = false;
       if (!crm) { showFieldError('grade-crm', 'Informe o CRM'); hasError = true; }
       if (!data) { showFieldError('grade-data', 'Informe a data'); hasError = true; }
@@ -788,7 +797,7 @@
   function setupAgendaDia() {
     document.getElementById('agdia-buscar-btn').addEventListener('click', function () {
       clearAllFieldErrors();
-      var data = document.getElementById('agdia-data').value.trim();
+      var data = normalizeDate(document.getElementById('agdia-data').value.trim());
       if (!data) { showFieldError('agdia-data', 'Informe a data'); return; }
 
       var agenda = call('bridge_agenda_dia', [data], ['string']);
@@ -854,23 +863,11 @@
       call('bridge_medico_cadastrar', medicos[i], ['string', 'string', 'number']);
     }
 
-    var disponibilidade = [
-      ['CG001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
-      ['CG002', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1]],
-      ['PD001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
-      ['PD002', [2,1,3,1,4,1,5,1]],
-      ['GN001', [1,0,2,0,3,0,4,0,5,0]],
-      ['GN002', [3,0,3,1,4,0,4,1,5,0,5,1]],
-      ['OR001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
-      ['OR002', [1,0,2,0,3,0]],
-      ['GT001', [1,0,1,1,2,0,2,1,3,0,3,1,4,0,4,1,5,0,5,1]],
-      ['GT002', [2,0,2,1,3,0,3,1,4,0,4,1]]
-    ];
-    for (i = 0; i < disponibilidade.length; i++) {
-      var crm = disponibilidade[i][0];
-      var pairs = disponibilidade[i][1];
-      for (d = 0; d < pairs.length; d += 2) {
-        call('bridge_medico_disponibilidade_alternar', [crm, pairs[d], pairs[d+1]], ['string', 'number', 'number']);
+    for (i = 0; i < medicos.length; i++) {
+      var crmDisp = medicos[i][0];
+      for (d = 0; d < 7; d++) {
+        call('bridge_medico_disponibilidade_alternar', [crmDisp, d, 0], ['string', 'number', 'number']);
+        call('bridge_medico_disponibilidade_alternar', [crmDisp, d, 1], ['string', 'number', 'number']);
       }
     }
 

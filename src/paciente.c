@@ -81,6 +81,21 @@ int validar_data_formato(const char *data) {
     return 1;
 }
 
+void normalizar_data(char *data) {
+    int i;
+    char tmp[11];
+
+    if (data == NULL || strlen(data) != 8) return;
+    for (i = 0; i < 8; i++) {
+        if (!isdigit((unsigned char)data[i])) return;
+    }
+    tmp[0] = data[0]; tmp[1] = data[1]; tmp[2] = '/';
+    tmp[3] = data[2]; tmp[4] = data[3]; tmp[5] = '/';
+    tmp[6] = data[4]; tmp[7] = data[5]; tmp[8] = data[6]; tmp[9] = data[7];
+    tmp[10] = '\0';
+    strcpy(data, tmp);
+}
+
 int buscar_paciente_cpf(const char *cpf) {
     int i;
 
@@ -186,6 +201,7 @@ int cadastrar_paciente(void) {
 
     printf("Data de nascimento (DD/MM/AAAA): ");
     ler_linha(data_nascimento, sizeof(data_nascimento));
+    normalizar_data(data_nascimento);
 
     printf("Telefone: ");
     ler_linha(telefone, sizeof(telefone));

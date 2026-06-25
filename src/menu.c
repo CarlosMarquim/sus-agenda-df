@@ -119,6 +119,7 @@ static void opcao_exibir_grade_dia(void) {
     } else {
         data[0] = '\0';
     }
+    normalizar_data(data);
 
     grade_idx = grade_buscar(medico_idx, data);
     if (grade_idx == -1) {

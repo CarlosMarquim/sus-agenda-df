@@ -86,6 +86,10 @@ int validar_cpf_formato(const char *cpf);
  * contrario. */
 int validar_data_formato(const char *data);
 
+/* Converte DDMMAAAA para DD/MM/AAAA in-place se a string tiver
+ * exatamente 8 digitos. O buffer deve ter pelo menos 11 bytes. */
+void normalizar_data(char *data);
+
 /* Adiciona o indice de um agendamento ao historico do paciente. Retorna
  * 0 em sucesso, -1 se o indice de paciente for invalido ou o historico
  * estiver cheio (MAX_HISTORICO). */

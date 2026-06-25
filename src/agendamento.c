@@ -330,6 +330,7 @@ void agendamento_criar_terminal(void) {
     /* Passo 5: data */
     printf("Data da consulta (DD/MM/AAAA): ");
     ler_linha(data, sizeof(data));
+    normalizar_data(data);
 
     /* Passo 6: localizar/criar grade e selecionar slot */
     grade_idx = grade_buscar(idx_medico, data);

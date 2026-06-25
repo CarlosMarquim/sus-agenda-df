@@ -40,6 +40,7 @@ void agenda_dia_terminal(void) {
 
     printf("Data (DD/MM/AAAA): ");
     ler_linha(data, sizeof(data));
+    normalizar_data(data);
 
     for (i = 0; i < num_medicos; i++) {
         const Medico *m = medico_obter(i);
